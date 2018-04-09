@@ -1,0 +1,36 @@
+
+.upload-box {
+	width: 500px;
+	height: 500px;
+	border: 3px dotted black;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.inner-wrapper {
+	transform: translateY(50%);
+}
+
+.file-input {
+	display: none;
+}
+
+.drop-file-icon {
+	width: 30%;
+}
+
+.file-hover {
+	background-color: gray;
+}
+
+.instruction-box {
+	display: none;
+	width: 500px;
+	height: 500px;
+	border: 3px dotted black;
+	margin: 0 auto;
+}
+
+.simulation-btn-container {
+	display: none;
+}

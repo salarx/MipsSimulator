@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="styles.css" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="upload-box" id="uploadBox">
+    <div class="inner-wrapper">
+
+      <img src="images/drop-file-icon.png" class="drop-file-icon" /> <br />
+
+      <input class="file-input" type="file" name="files[]" id="file" /> <br />
+
+      <strong>Choose a file</strong><span class="drag-drop-available"> or drag it here</span>
+
+    </div>
+  </div>
+
+  <div class="instruction-box" id="instructionBox">
+  </div>
+  
+  <center>
+    <div class="simulation-btn-container" id="simulation-btn-container">
+      <button class="simulation-btn">Simulate</button>
+    </div>
+  </center>
+
+  <!-- jQuery --> 
+  <script src="depends/jquery-3.3.1.min.js"></script>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
