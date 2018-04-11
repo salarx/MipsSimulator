@@ -175,7 +175,7 @@ function isValidRegister(register) {
 	var isValid = false;
 	var isNumPattern = /^\d+$/;
 
-	if(isNumPattern.test(registerNumber)) {
+	if(isNumPattern.test(register)) {
 		
 		registerNumber = parseInt(register, 10);
 
@@ -274,7 +274,7 @@ function setMemory(memoryString) {
  	var isValid = false;
  	var isNumPattern = /^\d+$/;
 
- 	if(isNumPattern.test(memoryNumber)) {
+ 	if(isNumPattern.test(memoryLocation)) {
 
  		memoryNumber = parseInt(memoryLocation, 10);
 

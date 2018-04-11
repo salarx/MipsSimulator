@@ -86,6 +86,8 @@ function parseImm(codeString) {
  * 1000 11ss ssst tttt iiii iiii iiii iiii*/
 function loadWord(codeString) {
 	
+	instructionCache.push(codeString);
+
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var offset = parseOffset(codeString);
@@ -97,6 +99,8 @@ function loadWord(codeString) {
  * 1010 11ss ssst tttt iiii iiii iiii iiii*/
 function storeWord(codeString) {
 	
+	instructionCache.push(codeString);
+
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var offset = parseOffset(codeString);
@@ -111,6 +115,8 @@ function storeWord(codeString) {
  * 0000 00ss ssst tttt dddd d000 0010 0000*/
 function add(codeString) {
 
+	instructionCache.push(codeString);
+
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var rd = parseRd(codeString);
@@ -123,6 +129,8 @@ function add(codeString) {
  * 0010 00ss ssst tttt iiii iiii iiii iiii*/
 function addi(codeString) {
 	
+	instructionCache.push(codeString);
+
 	var i = 0;
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
@@ -136,6 +144,8 @@ function addi(codeString) {
  * 0000 00ss ssst tttt dddd d000 0010 0010*/
 function sub(codeString) {
 	
+	instructionCache.push(codeString);
+
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString); 
 	var rd = parseRd(codeString);
@@ -148,6 +158,8 @@ function sub(codeString) {
  * 0000 00ss ssst tttt dddd d000 0010 1010 */
 function setLessThan(codeString) {
 	
+	instructionCache.push(codeString);
+
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var rd = parseRd(codeString);
@@ -159,6 +171,8 @@ function setLessThan(codeString) {
  * if(rs == rt) pc += offset * 4*/
 function branchOnEqual(codeString) {
 	
+	instructionCache.push(codeString);
+
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var offset = parseOffset(codeString);
@@ -170,6 +184,8 @@ function branchOnEqual(codeString) {
  * if(rs != rt) pc += offset * 4*/
 function branchNotEqual(codeString) {
 	
+	instructionCache.push(codeString);
+
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var offset = parseOffset(codeString);
