@@ -2,20 +2,20 @@
 
 ## Supported MIPS Instructions
 - [Add](#add)
-- [Addi](#addi)
+- [Addi (Add Immediate)](#addi)
 - [Sub](#sub)
-- [Slt](#slt)
-- [Lw](#lw)
-- [Sw](#sw)
-- [Beq](#beq)
-- [Bne](#bne)
+- [Slt (Set on Less Than (signed))](#slt)
+- [Lw (Load Word)](#lw)
+- [Sw (Store Word)](#sw)
+- [Beq (Branch on Equal)](#beq)
+- [Bne (Branch on Not Equal)](#bne)
 
 ## Add
 add rd, rs, rt  
 rd = rs + rt  
 0000 00ss ssst tttt dddd d000 0010 0000
 
-## Addi
+## Addi (Add Immediate)
 addi rs, rt, imm  
 rt = rs + imm  
 0010 00ss ssst tttt iiii iiii iiii iiii
@@ -25,27 +25,28 @@ sub rd, rs, rt
 rd = rs - rt  
 0000 00ss ssst tttt dddd d000 0010 0010
 
-## Slt
+## Slt (Set on Less Than (signed))
 slt rd, rs, rt  
-if rs is less than rt, then rd = 1 else rd = 0  
+if(rs < rt) rd = 1 else rd = 0  
 0000 00ss ssst tttt dddd d000 0010 1010 
 
-## Lw
+## Lw (Load Word)
 lw rt, offset(rs)  
 rt = *(int*)(offset+rs)  
 1000 11ss ssst tttt iiii iiii iiii iiii
 
-## Sw
+## Sw (Store Word)
 sw rt, offset(rs)  
 *(int*)(offset+rs) = rt  
 1010 11ss ssst tttt iiii iiii iiii iiii
 
-## Beq
+## Beq (Branch on Equal)
 beq rs, rt, offset  
 if(rs == rt) pc += offset * 4  
 0001 00ss ssst tttt iiii iiii iiii iiii
 
-## Bne
+## Bne (Branch on Not Equal)
 bne rs, rt, offset  
+if(rs != rt) pc += offset * 4  
 0001 01ss ssst tttt iiii iiii iiii iiii  
-if(rs != rt) pc += offset * 4
+
