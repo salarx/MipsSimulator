@@ -1,7 +1,7 @@
 # MIPS Simulator
 
 ## Supported MIPS Instructions
-- [Add - Add (with overflow)](#add-add(with-overflow))
+- [Add - Add (with overflow)](#add---add-with-overflow)
 - [Addi - Add Immediate (with overflow)](#addi-add-immediate-(with-overflow))
 - [Sub - Subtract](#Sub - Subtract)
 - [Slt - Set on Less Than (signed)](#Slt - Set on Less Than (signed))
