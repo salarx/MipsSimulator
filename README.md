@@ -1,1 +1,1 @@
-# mipsSimulatorWeb
+# MIPS Simulator
