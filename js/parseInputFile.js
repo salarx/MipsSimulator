@@ -97,6 +97,7 @@ var warnings = [];
 
   	$("#instructionBox").html("");
   	$("#simulationBox").html("");
+  	$("#simulationBox").hide();
   	registers = {};
   	memory = {};
   	instructions = [];
