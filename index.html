@@ -9,35 +9,79 @@
 </head>
 <body>
 
-  <div class="upload-box" id="uploadBox">
-    <div class="inner-wrapper">
-
-      <img src="images/drop-file-icon.png" class="drop-file-icon" /> <br />
-
-      <input class="file-input" type="file" name="files[]" id="file" /> <br />
-
-      <strong>Choose a file</strong><span class="drag-drop-available"> or drag it here</span>
-
+<div class="page-wrap">
+  <div class="overlay">
+    <div class="navbar navbar-expand-md">
+      <div class="container-fluid">
+        <div class="nav-wrapper">
+          <span class="navbar-brand float-left">MIPS Pipeline Simulator</span>
+          <button class="navbar-toggler float-right" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse nav-shift" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a href="https://github.com/hunterhedges" class="nav-link">github.com/hunterhedges</a>
+              </li>
+              <li class="nav-item active">
+                <a href="#" class="nav-link">Docs</a>
+              </li>
+              <li class="nav-item active">
+                <a href="#" class="nav-link">Source</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="instruction-box" id="instructionBox">
+  <div class="container text-center mx-auto">
+    <div class="row">
+      <div class="col-12 col-md-8 offset-md-2 upload-container" id="uploadContainer">
+
+        <img src="images/drop-file-icon.png" class="drop-file-icon" /> <br />
+
+        <input class="file-input" type="file" name="files[]" id="file" /> <br />
+
+        <span id="dragDropAvailable"><strong>Choose a file</strong> or drag it here</span>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto">
+    <div class="row">
+      <div class="col-12 col-md-8 offset-md-2 instruction-container" id="instructionBox">
+
+      </div>
+    </div>
   </div>
   
-  <center>
-    <div class="simulation-btn-container" id="simulation-btn-container">
-      <button class="btn btn-primary" onclick="simulate()">Simulate</button>
+  <div class="container text-center mx-auto">
+    <div class="row">
+      <div class="col-12 col-md-8 offset-md-2 control-panel" id="controlPanel">
+        <button class="btn btn-primary" onclick="simulate()">Simulate</button>
+      </div>
     </div>
-  </center>
-
-  <div class="simulation-box" id="simulationBox">
-    <center>SIMULATION RESULTS</center>
-
-
-
-
   </div>
 
+  <div class="container mx-auto">
+    <div class="row">
+      <div class="col-12 simulation-container" id="simulationBox">
+
+      </div>
+    </div>
+  </div>
+
+</div> <!-- End page wrap -->
+
+  <div class="overlay">
+    <footer class="container-fluid">
+      <div class="row">
+      </div>
+    </footer>
+  </div>
 
   <!-- jQuery --> 
   <script src="depends/jquery-3.3.1.min.js"></script>

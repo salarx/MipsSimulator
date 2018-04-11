@@ -85,7 +85,9 @@ function displaySimulationResults() {
 	var cycleCountDisplay = getCycleCountDisplay();
 	var instructionRowDisplay = getInstructionRowDisplay();
 
-   $("#simulationBox").append("<div class='table-responsive'><table class='table table-bordered table-sm'>\
-   							   <tr><td class='text-center' colspan=" + cycleCount + ">Clock Cycles</td></tr>" +
-           					   cycleCountDisplay + instructionRowDisplay + "</table></div>");
+	$("#simulationBox").append("<center>SIMULATION RESULTS</center>");
+
+	$("#simulationBox").append("<div class='table-responsive'><table class='table table-bordered table-sm'>\
+   							    <tr><td class='text-center' colspan=" + cycleCount + ">Clock Cycle</td></tr>" +
+           					    cycleCountDisplay + instructionRowDisplay + "</table></div>");
 }

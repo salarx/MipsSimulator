@@ -9,20 +9,26 @@ var warnings = [];
  * Go to "handleFileOnUpload" on drop */
  $(function() {
 
- 	$("#uploadBox").on("drag dragstart dragend dragover dragenter dragleave drop", function(event) {
+ 	if(!canDoDragAndDrop) {
+ 		$("#dragDropAvailable").hide();
+ 	}
+
+ 	$("#uploadContainer").on("drag dragstart dragend dragover dragenter dragleave drop", function(event) {
  		event.preventDefault();
  		event.stopPropagation();
  	});
 
- 	$("#uploadBox").on("dragenter dragover", function() {
- 		$("#uploadBox").addClass("file-hover");
+ 	$("#uploadContainer").on("dragenter dragover", function() {
+ 		$("#uploadContainer").addClass("file-hover");
  	});
 
- 	$("#uploadBox").on("dragleave dragend drop", function() {
- 		$("#uploadBox").removeClass("file-hover")
+ 	$("#uploadContainer").on("dragleave dragend drop", function() {
+ 		$("#uploadContainer").removeClass("file-hover")
  	});
 
- 	$("#uploadBox").on("drop", handleFileOnUpload);
+ 	$("#uploadContainer").on("drop", handleFileOnUpload);
+
+	$('input[type="file"]').change(handleFileOnUpload);
 
  });
 
@@ -42,7 +48,15 @@ var warnings = [];
   * alert user that file is not .txt */
   function handleFileOnUpload(event) {
 
-  	var droppedFile = event.originalEvent.dataTransfer.files[0];
+  	var droppedFile;
+
+  	if(event.type == "drop") {
+  		droppedFile = event.originalEvent.dataTransfer.files[0];
+  	}
+  	else if(event.type == "change") {
+  		droppedFile = $("#file")[0].files[0];
+  	}
+
   	var fileName = droppedFile.name;
   	var fileType = fileName.substr(fileName.length - 3);
 
@@ -82,12 +96,16 @@ var warnings = [];
   function resetProgram() {
 
   	$("#instructionBox").html("");
+  	$("#simulationBox").html("");
   	registers = {};
   	memory = {};
   	instructions = [];
   	warnings = [];
   	registerStates = [];
   	memoryStates = [];
+	instructionCache = [];
+	pcCounter = 0;
+	cycleCount = 0;
 
   }
 
@@ -410,7 +428,7 @@ function readCode(codeString) {
 function displayDecodedInputFile() {
 
 	$("#instructionBox").css("display", "block");
-	$("#simulation-btn-container").css("display", "block");
+	$("#controlPanel").css("display", "block");
 
 	$("#instructionBox").append("<center>DECODED INSTRUCTIONS</center><br />");
 	
