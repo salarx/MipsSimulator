@@ -6,7 +6,7 @@ var warnings = [];
 /* Setup the drag and drop functionality
  * Add "file-hover" class when dragover
  * Remove "file-hover" class when not dragover 
- * Go to "displayDroppedFiles" on drop */
+ * Go to "handleFileOnUpload" on drop */
  $(function() {
 
  	$("#uploadBox").on("drag dragstart dragend dragover dragenter dragleave drop", function(event) {
@@ -60,21 +60,13 @@ var warnings = [];
   				resetProgram();
 
   				fileContent = fileContent.toLowerCase();
-
   				fileContent = decipherRegisters(fileContent);
-
   				fileContent = decipherMemory(fileContent);
-
   				fileContent = decipherCode(fileContent);
-
-  				if(!isBlank(fileContent)) {
-  					warnings.push("File content still contains text");
-  				}
 
   				displayDecodedInputFile();
 
   				console.log(warnings);
-
   			}
   		};
 
@@ -86,17 +78,18 @@ var warnings = [];
 
   }
 
- function resetProgram() {
+  /* Clear program when a file is uploaded */
+  function resetProgram() {
 
- 	$("#instructionBox").html("");
- 	registers = {};
-	memory = {};
-	instructions = [];
-	warnings = [];
-	registerStates = [];
-	memoryStates = [];
+  	$("#instructionBox").html("");
+  	registers = {};
+  	memory = {};
+  	instructions = [];
+  	warnings = [];
+  	registerStates = [];
+  	memoryStates = [];
 
- }
+  }
 
 /* Take the register section out of the text file
 * Send each register and value to setRegister fxn */
@@ -174,21 +167,24 @@ function setRegisters(registerString) {
 
 }
 
-/* 
- * 
- */
+/* Check that the register number is a valid register
+* Register number must be a number between 0 and 31 */
 function isValidRegister(register) {
 
 	var registerNumber;
 	var isValid = false;
+	var isNumPattern = /^\d+$/;
 
-	registerNumber = parseInt(register, 10);
+	if(isNumPattern.test(registerNumber)) {
+		
+		registerNumber = parseInt(register, 10);
 
-	if(registerNumber || registerNumber == 0) {
+		if(registerNumber || registerNumber == 0) {
 
-		if(registerNumber >= 0 && registerNumber < 32) {
+			if(registerNumber >= 0 && registerNumber < 32) {
 
-			isValid = true;
+				isValid = true;
+			}
 		}
 	}
 
@@ -247,7 +243,7 @@ function setMemory(memoryString) {
 	memoryLocation = memoryLocation.replace("m", "");
 
 	if(isValidMemoryLocation(memoryLocation)) {
-			
+
 		for(i = i + 1; i < memoryString.length; i++) {
 			value += memoryString.charAt(i);
 		}
@@ -266,52 +262,58 @@ function setMemory(memoryString) {
 	else {
 		warnings.push("Not a valid memory location");
 	}
+
 }
 
-/*
- * 
- */
-function isValidMemoryLocation(memoryLocation) {
+/* Check that the memory number is a valid memory location
+ * Memory number must be a number greater than 0 and 
+ * divisible by 4 */
+ function isValidMemoryLocation(memoryLocation) {
 
-	var memoryNumber;
-	var isValid = false;
+ 	var memoryNumber;
+ 	var isValid = false;
+ 	var isNumPattern = /^\d+$/;
 
-	memoryNumber = parseInt(memoryLocation, 10);
+ 	if(isNumPattern.test(memoryNumber)) {
 
-	if(memoryNumber || memoryNumber == 0) {
+ 		memoryNumber = parseInt(memoryLocation, 10);
 
-		if(memoryNumber >= 0 && memoryNumber % 4 == 0) {
+ 		if(memoryNumber || memoryNumber == 0) {
 
-			isValid = true;
-		}
-	}
+ 			if(memoryNumber >= 0 && memoryNumber % 4 == 0) {
 
-	return isValid;
-}
+ 				isValid = true;
+ 			}
+ 		}	
+ 	}
 
-/* 
- * 
- */
-function isValidValue(value) {
+ 	return isValid;
+ }
 
-	var isValid = false;
-	var isNumPattern = /^\d+$/;
+/* Check that a value is a valid MIPS value.
+ * The value must be a number, less than 4294967295 
+ * (MAX 32 bit unsigned integer), and greater than 
+ * -2147483648 (MIN 32 bit signed integer) */
+ function isValidValue(value) {
 
-	if(isNumPattern.test(value)) {
+ 	var isValid = false;
+ 	var isNumPattern = /^\d+$/;
 
-		value = parseInt(value, 10);
+ 	if(isNumPattern.test(value)) {
 
-		if(value || value == 0) {
+ 		value = parseInt(value, 10);
 
-			if(value <= 4294967295 && value >= -2147483648) {
+ 		if(value || value == 0) {
 
-				isValid = true;
-			}
-		}
-	}
+ 			if(value <= 4294967295 && value >= -2147483648) {
 
-	return isValid;
-}
+ 				isValid = true;
+ 			}
+ 		}
+ 	}
+
+ 	return isValid;
+ }
 
 /* Take the code section out of the text file
 * Sends each line of code to readCode fxn */
@@ -401,6 +403,7 @@ function readCode(codeString) {
 		warnings.push(opcode + ": Opcode not found");
 		break;
 	}
+
 }
 
 /* Displays the instruction set to user */
@@ -444,8 +447,9 @@ function displayDecodedInputFile() {
 	}
 
 	$('html, body').animate({
-        scrollTop: $("#instructionBox").offset().top
-    }, 500);
+		scrollTop: $("#instructionBox").offset().top
+	}, 500);
+
 }
 
 /* Return a copy of the registers */
@@ -474,10 +478,16 @@ function cloneMemory() {
 
 /* Converts unsigned decimal to signed decimal */
 function uintToInt(uint, nbit) {
+
 	nbit = +nbit || 32;
-	if (nbit > 32) throw new RangeError('uintToInt only supports ints up to 32 bits');
+
+	if (nbit > 32) {
+		throw new RangeError('uintToInt only supports ints up to 32 bits');
+	}
+
 	uint <<= 32 - nbit;
 	uint >>= 32 - nbit;
+
 	return uint;
 }
 

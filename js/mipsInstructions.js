@@ -143,11 +143,6 @@ function sub(codeString) {
 	instructions.push("SUB R" + rd + ", R" + rs + ", R" + rt + "<br />");
 }
 
-/* TODO */
-function subi(codeString) {
-	console.log("subtract immediate");
-}
-
 /* slt rd, rs, rt
  * if rs is less than rt, rd = 1 else rd = 0
  * 0000 00ss ssst tttt dddd d000 0010 1010 */
