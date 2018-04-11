@@ -1,5 +1,8 @@
 // MIPS INSTRUCTIONS
 
+var registerStates = [];
+var memoryStates = [];
+
 /* Return the decimal value of binary from 
  * characters between 6 - 11 representing
  * rs in MIPS instructions */ 
@@ -99,6 +102,8 @@ function storeWord(codeString) {
 	var offset = parseOffset(codeString);
 
 	instructions.push("SW R" + rt + ", " + offset + "(R" + rs + ") <br />");
+
+	memory[rs + offset] = registers["r" + rt];
 }
 
 /* add rd, rs, rt

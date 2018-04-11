@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="styles.css" rel="stylesheet" />
+  <link href="depends/bootstrap-4.0.0/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
 
@@ -25,14 +26,22 @@
   
   <center>
     <div class="simulation-btn-container" id="simulation-btn-container">
-      <button class="simulation-btn">Simulate</button>
+      <button class="simulation-btn" onclick="simulate()">Simulate</button>
     </div>
   </center>
 
+  <div class="simulation-box" id="simulationBox">
+    <center>SIMULATION RESULTS</center>
+  </div>
+
+
   <!-- jQuery --> 
   <script src="depends/jquery-3.3.1.min.js"></script>
+  <script src="depends/bootstrap-4.0.0/js/bootstrap.min.js"></script>
+
+  <script src="parseInputFile.js"></script>
   <script src="mipsInstructions.js"></script>
-  <script src="main.js"></script>
+  <script src="simulate.js"></script>
 
 </body>
 </html>

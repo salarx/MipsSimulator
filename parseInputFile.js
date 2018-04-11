@@ -1,5 +1,5 @@
-var registers = [];
-var memorys = [];
+var registers = {};
+var memory = {};
 var instructions = [];
 var warnings = [];
 
@@ -56,6 +56,9 @@ var warnings = [];
   				alert("File is empty!");
   			}
   			else {
+
+  				resetProgram();
+
   				fileContent = fileContent.toLowerCase();
 
   				fileContent = decipherRegisters(fileContent);
@@ -68,32 +71,46 @@ var warnings = [];
   					warnings.push("File content still contains text");
   				}
 
-  				setInstructions();
+  				displayDecodedInputFile();
+
   				console.log(warnings);
+
   			}
   		};
 
   		reader.readAsText(droppedFile);
   	}
   	else {
-  		alert("Not a text file!");
+  		alert("Incorrect file type!");
   	}
 
   }
 
+ function resetProgram() {
+
+ 	$("#instructionBox").html("");
+ 	registers = {};
+	memory = {};
+	instructions = [];
+	warnings = [];
+	registerStates = [];
+	memoryStates = [];
+
+ }
+
 /* Take the register section out of the text file
- * Send each register and value to setRegister fxn */
- function decipherRegisters(fileString) {
+* Send each register and value to setRegister fxn */
+function decipherRegisters(fileString) {
 
- 	var registerSection = "";
- 	var i = 0;
+	var registerSection = "";
+	var i = 0;
 
- 	if(fileString.includes("registers")) {
+	if(fileString.includes("registers")) {
 
- 		while(fileString.charAt(i) != 'm') {
- 			registerSection += fileString.charAt(i);
- 			i++;
- 		}
+		while(fileString.charAt(i) != 'm' && fileString.charAt(i) != 'c' && i < fileString.length) {
+			registerSection += fileString.charAt(i);
+			i++;
+		}
 
 		// Remove register section from fileContent
 		fileString = fileString.replace(registerSection, "");
@@ -109,6 +126,7 @@ var warnings = [];
 			}
 		}
 
+		registerStates.push(cloneRegisters());
 	}
 	else {
 		warnings.push("Register section not detected.");
@@ -130,26 +148,66 @@ function setRegisters(registerString) {
 		i++;
 	}
 
-	for(i = i + 1; i < registerString.length; i++) {
-		value += registerString.charAt(i);
+	register = register.replace("r", "");
+
+	if(isValidRegister(register)) {
+
+		for(i = i + 1; i < registerString.length; i++) {
+			value += registerString.charAt(i);
+		}
+
+		if(isValidValue(value)) {
+
+			value = parseInt(value, 10);
+
+			registers[register] = value;
+
+		}
+		else {
+			warnings.push("Register value '" + value + "' could not be parsed");
+		}
+
+	}
+	else {
+		warnings.push("Not a valid register: " + register);
 	}
 
-	registers.push(String(register).toUpperCase() + ":" + String(value));
+}
+
+/* 
+ * 
+ */
+function isValidRegister(register) {
+
+	var registerNumber;
+	var isValid = false;
+
+	registerNumber = parseInt(register, 10);
+
+	if(registerNumber || registerNumber == 0) {
+
+		if(registerNumber >= 0 && registerNumber < 32) {
+
+			isValid = true;
+		}
+	}
+
+	return isValid;
 }
 
 /* Take the memory section out of the text file
- * Send each memory location and value to setMemory fxn */
- function decipherMemory(fileString) {
+* Send each memory location and value to setMemory fxn */
+function decipherMemory(fileString) {
 
- 	var memorySection = "";
- 	var i = 0;
+	var memorySection = "";
+	var i = 0;
 
- 	if(fileString.includes("memory")) {
+	if(fileString.includes("memory")) {
 
- 		while(fileString.charAt(i) != 'c') {
- 			memorySection += fileString.charAt(i);
- 			i++;
- 		}
+		while(fileString.charAt(i) != 'c' && i < fileString.length) {
+			memorySection += fileString.charAt(i);
+			i++;
+		}
 
 		// Remove memory section from fileContent
 		fileString = fileString.replace(memorySection, "");
@@ -164,6 +222,8 @@ function setRegisters(registerString) {
 				setMemory(memorySectionArray[i]);
 			}
 		}
+
+		memoryStates.push(cloneMemory());
 	}
 	else {
 		warnings.push("Memory section not detected");
@@ -172,35 +232,97 @@ function setRegisters(registerString) {
 	return fileString;
 }
 
- /* Sets the initial value of the memory */
-  function setMemory(memoryString) {
+/* Sets the initial value of the memory */
+function setMemory(memoryString) {
 
-  	var memory = "";
-  	var value = "";
-  	var i = 0;
+	var memoryLocation = "";
+	var value = "";
+	var i = 0;
 
-  	while(memoryString.charAt(i) != ' ') {
-  		memory += memoryString.charAt(i);
-  		i++;
-  	}
+	while(memoryString.charAt(i) != ' ') {
+		memoryLocation += memoryString.charAt(i);
+		i++;
+	}
 
-  	for(i = i + 1; i < memoryString.length; i++) {
-  		value += memoryString.charAt(i);
-  	}
+	memoryLocation = memoryLocation.replace("m", "");
 
-  	memorys.push(String(memory) + ":" + String(value));
-  }
+	if(isValidMemoryLocation(memoryLocation)) {
+			
+		for(i = i + 1; i < memoryString.length; i++) {
+			value += memoryString.charAt(i);
+		}
+
+		if(isValidValue(value)) {
+
+			value = parseInt(value, 10);
+
+			memory[memoryLocation] = value;
+		}
+		else {
+			warnings.push("Memory value '" + value + "' could not be parsed");
+		}
+		
+	}
+	else {
+		warnings.push("Not a valid memory location");
+	}
+}
+
+/*
+ * 
+ */
+function isValidMemoryLocation(memoryLocation) {
+
+	var memoryNumber;
+	var isValid = false;
+
+	memoryNumber = parseInt(memoryLocation, 10);
+
+	if(memoryNumber || memoryNumber == 0) {
+
+		if(memoryNumber >= 0 && memoryNumber % 4 == 0) {
+
+			isValid = true;
+		}
+	}
+
+	return isValid;
+}
+
+/* 
+ * 
+ */
+function isValidValue(value) {
+
+	var isValid = false;
+	var isNumPattern = /^\d+$/;
+
+	if(isNumPattern.test(value)) {
+
+		value = parseInt(value, 10);
+
+		if(value || value == 0) {
+
+			if(value <= 4294967295 && value >= -2147483648) {
+
+				isValid = true;
+			}
+		}
+	}
+
+	return isValid;
+}
 
 /* Take the code section out of the text file
- * Sends each line of code to readCode fxn */
- function decipherCode(fileString) {
+* Sends each line of code to readCode fxn */
+function decipherCode(fileString) {
 
- 	var codeSection = fileString;
- 	var i = 0;
+	var codeSection = fileString;
+	var i = 0;
 
- 	if(fileString.includes("code")) {
+	if(fileString.includes("code")) {
 
-		// Remove register section from fileContent
+		// Remove code section from fileContent
 		fileString = fileString.replace(codeSection, "");
 
 		codeSection = codeSection.replace("code", "");
@@ -210,7 +332,13 @@ function setRegisters(registerString) {
 		for(i = 0; i < codeSectionArray.length; i++) {
 			
 			if(!isBlank(codeSectionArray[i])) {
-				readCode(codeSectionArray[i]);
+
+				if(codeSectionArray[i].length == 32) {
+					readCode(codeSectionArray[i]);
+				}	
+				else {
+					warnings.push("Code '" + codeSectionArray[i] + "' is not 32 bit");
+				}
 			}
 		}
 	}
@@ -222,18 +350,18 @@ function setRegisters(registerString) {
 }
 
 /* Takes a 32 bit binary MIPS instruction and reads
- * opcode and funct code to determine which instruction */
- function readCode(codeString) {
+* opcode and funct code to determine which instruction */
+function readCode(codeString) {
 
- 	var opcode = "";
- 	var funct = "";
- 	var i = 0;
+	var opcode = "";
+	var funct = "";
+	var i = 0;
 
- 	for(i = 0; i < 6; i++) {
- 		opcode = opcode + codeString.charAt(i);
- 	}
+	for(i = 0; i < 6; i++) {
+		opcode = opcode + codeString.charAt(i);
+	}
 
- 	switch(opcode) {
+	switch(opcode) {
 		// Add, subtract, set less than
 		case "000000":
 		for(i = codeString.length - 6; i < codeString.length; i++) {
@@ -273,31 +401,75 @@ function setRegisters(registerString) {
 		warnings.push(opcode + ": Opcode not found");
 		break;
 	}
-
 }
 
 /* Displays the instruction set to user */
-function setInstructions() {
+function displayDecodedInputFile() {
 
-	$("#uploadBox").hide();
 	$("#instructionBox").css("display", "block");
 	$("#simulation-btn-container").css("display", "block");
 
 	$("#instructionBox").append("<center>DECODED INSTRUCTIONS</center><br />");
-
+	
 	$("#instructionBox").append("REGISTERS <br />");
-	for(var i = 0; i < registers.length; i++) {
-		$("#instructionBox").append(registers[i] + "<br />");
+	if(registerStates[0]) {
+		for(var key in registerStates[0]) {
+			$("#instructionBox").append("R" + key + " " + registerStates[0][key] + "<br />");
+		}
 	}
+	else {
+		$("#instructionBox").append("Registers all set to 0 <br />");
+	}
+
+	$("#instructionBox").append("<br />");
 
 	$("#instructionBox").append("MEMORY <br />");
-	for(var i = 0; i < memorys.length; i++) {
-		$("#instructionBox").append(memorys[i] + "<br />");
+	if(memoryStates[0]) {
+		for(var key in memoryStates[0]) {
+			$("#instructionBox").append(key + " " + memoryStates[0][key] + "<br />");
+		}
+	} 
+	else {
+		$("#instructionBox").append("Memory locations all set to 0 <br />");
 	}
 
-	$("#instructionBox").append("CODE <br />");
-	$("#instructionBox").append(instructions);
+	$("#instructionBox").append("<br />");
 
+	$("#instructionBox").append("CODE <br />");
+	if(instructions.length != 0) {
+		$("#instructionBox").append(instructions);
+	}
+	else {
+		$("#instructionBox").append("No instructions entered");
+	}
+
+	$('html, body').animate({
+        scrollTop: $("#instructionBox").offset().top
+    }, 500);
+}
+
+/* Return a copy of the registers */
+function cloneRegisters() {
+
+	var clone = {};
+
+	for(var key in registers) {
+		clone[key] = registers[key];
+	}
+
+	return clone;
+}
+
+/* Return a copy of the memory */
+function cloneMemory() {
+
+	var clone = {};
+
+	for(var key in memory) {
+		clone[key] = memory[key];
+	}
+
+	return clone;
 }
 
 /* Converts unsigned decimal to signed decimal */
@@ -318,7 +490,6 @@ function isEmpty(str) {
 function isBlank(str) {
 	return (!str || /^\s*$/.test(str));
 }
-
 
 
 
