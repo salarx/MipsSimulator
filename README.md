@@ -16,8 +16,8 @@ rd = rs + rt
 0000 00ss ssst tttt dddd d000 0010 0000
 
 ## Addi
-addi rs, rt, imm
-rt = rs + imm
+addi rs, rt, imm  
+rt = rs + imm  
 0010 00ss ssst tttt iiii iiii iiii iiii
 
 ## Sub
