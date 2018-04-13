@@ -1,6 +1,6 @@
 # MIPS Simulator
 
-## Input File Format
+## Input File Format <a href="https://github.com/hunterhedges/mipsSimulator/tree/master/sampleinputs">(Sample Inputs)</a>
 
 ### Setting Initial Values of Registers
 This section is began with the word "registers" (not case sensitive).
