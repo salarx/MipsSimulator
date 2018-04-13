@@ -83,7 +83,6 @@ footer {
 /***** Decoded Instruction Section *****/
 .decoded-instructions-container {
 	display: none;
-	min-height: 500px;
 	border: 3px dotted black;
 	font-size: 22px;
 	padding: 10px;

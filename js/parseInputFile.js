@@ -76,6 +76,7 @@ function loadDemoFile() {
     loadDecodedCode(parseSection(fileContent, sections.code));
 
     displayDecodedInstructions();
+    displayWarnings();
 
   });
 
@@ -95,8 +96,6 @@ function handleFileOnUpload(event) {
     droppedFile = $("#file")[0].files[0];
   }
 
-  console.log(droppedFile);
-
   if(droppedFile.type.includes("text")) {
     const reader = new FileReader();
 
@@ -104,7 +103,7 @@ function handleFileOnUpload(event) {
       var fileContent = event.target.result;
 
       if(fileContent.isNullOrEmpty()) {
-        showErrorModal("Error Uploading File", "File is empty");
+        showModal("Error Uploading File", "File is empty");
       }
       else {
 
@@ -117,6 +116,7 @@ function handleFileOnUpload(event) {
         loadDecodedCode(parseSection(fileContent, sections.code));
 
         displayDecodedInstructions();
+        displayWarnings();
 
       }
     };
@@ -124,7 +124,7 @@ function handleFileOnUpload(event) {
     reader.readAsText(droppedFile);
   }
   else {
-    showErrorModal("Error Uploading File", "Incorrect file type");
+    showModal("Error Uploading File", "Incorrect file type");
   }
 
 }
@@ -154,7 +154,7 @@ function parseSection(fileContent, section) {
 
   }
   else {
-    warnings.push(section.sectionName.toUpperCase() + " not found in file.");
+    warnings.push("<strong>" + section.sectionName.toUpperCase() + "</strong> section not found in file.");
   }
 
   return sectionArray;
@@ -166,6 +166,10 @@ function parseSection(fileContent, section) {
 // Return:
 //  none
 function loadRegisters(registerArray) {
+
+  if(!registerArray) {
+    return;
+  }
 
   for(var i = 0; i < registerArray.length; i++) {
 
@@ -219,11 +223,11 @@ function isValidRegister(register) {
       isValid = true;
     }
     else {
-      warnings.push("'" + register + "'" + " must be between 1 and 31 inclusive.");
+      warnings.push("Register <strong>" + register + "</strong> must be between 1 and 31 inclusive.");
     }
   }
   else {
-    warnings.push("'" + register + "'" + " could not be parsed.");
+    warnings.push("Register <strong>" + register + "</strong> could not be parsed.");
   }
 
   return isValid;
@@ -235,6 +239,10 @@ function isValidRegister(register) {
 // Return:
 //  none
 function loadMemory(memoryArray) {
+
+  if(!memoryArray) {
+    return;
+  }
 
   for(var i = 0; i < memoryArray.length; i++) {
 
@@ -282,16 +290,16 @@ function isValidMemoryLocation(memoryLocation) {
 
   if(memoryNumber) {
 
-    if(memoryNumber >= 0 && memoryNumber % 4 == 0) {
+    if(memoryNumber >= 0 && memoryNumber < 65280 && memoryNumber % 4 == 0) {
 
       isValid = true;
     }
     else {
-      warnings.push("'" + memoryLocation + "'" + " must be greater than 0 and divisible by 4.");
+      warnings.push("Memory location <strong>" + memoryLocation + "</strong> must be greater than 0, less than 65280, and divisible by 4.");
     }
   }
   else {
-    warnings.push("'" + memoryLocation + "'" + " could not be parsed.");
+    warnings.push("Memory location <strong>" + memoryLocation + "</strong> could not be parsed.");
   }
 
   return isValid;
@@ -306,9 +314,15 @@ function isValidMemoryLocation(memoryLocation) {
 //  None
 function loadDecodedCode(codeArray) {
 
+  if(!codeArray) {
+    return;
+  }
+
   for(var i = 0; i < codeArray.length; i++) {
 
     codeArray[i] = codeArray[i].trim();
+    codeArray[i] = codeArray[i].replace(/ /g,"");
+    console.log(codeArray[i]);
 
     var opcode = "";
     var funct = "";
@@ -322,6 +336,7 @@ function loadDecodedCode(codeArray) {
       for(var j = codeArray[i].length - 6; j < codeArray[i].length; j++) {
         funct += codeArray[i].charAt(j);
       }
+
       if(funct == "100000") {
         decodedCode.push(decodeAdd(codeArray[i]));
       }
@@ -332,7 +347,7 @@ function loadDecodedCode(codeArray) {
         decodedCode.push(decodeSetOnLessThan(codeArray[i]));
       }
       else {
-        warnings.push("'" + codeArray[i] + "' has an invalid funct code.");
+        warnings.push("Code <strong>" + codeArray[i] + "</strong> has an invalid funct code.");
       }
       break;
       case "001000":
@@ -351,7 +366,7 @@ function loadDecodedCode(codeArray) {
       decodedCode.push(decodeStoreWord(codeArray[i]));
       break;
       default:
-      warnings.push("'" + codeArray[i] + "' has an invalid opcode.");
+      warnings.push("Code <strong>" + codeArray[i] + "</strong> has an invalid opcode.");
       break;
     }
   }
@@ -378,11 +393,11 @@ function isValidValue(value) {
       isValid = true;
     }
     else {
-      warnings.push("'" + value + "'" + " resulted in overflow.");
+      warnings.push("Value <strong>" + value + "</strong> will result in overflow.");
     }
   }
   else {
-    warnings.push("'" + value + "'" + " could not be parsed.");
+    warnings.push("Value <strong>" + value + "</strong> could not be parsed.");
   }
 
   return isValid;
@@ -432,17 +447,33 @@ function displayDecodedInstructions() {
 
 }
 
-// Display error modal to user.
+// Display warnings in modal to user
+function displayWarnings() {
+
+  if(warnings.length != 0) {
+    const warningsTitle = "Warnings";
+    var warningsBody = "";
+
+    for(var i = 0; i < warnings.length; i++) {
+      warningsBody += (i+1) + ". " + warnings[i] + "<br />";
+    }
+
+    showModal(warningsTitle, warningsBody);
+  }
+
+}
+
+// Display modal to user
 // Params:
 //  modalTitle: string title of modal
 //  modalBody: string of content for modal body
 // Return:
 //  None
-function showErrorModal(modalTitle, modalBody) {
+function showModal(modalTitle, modalBody) {
 
-  $("#errorModalTitle").text(modalTitle);
-  $("#errorModalBody").text(modalBody);
-  $("#errorModal").modal("show");
+  $("#modalTitle").html(modalTitle);
+  $("#modalBody").html(modalBody);
+  $("#modal").modal("show");
 
 }
 
@@ -465,4 +496,4 @@ function reset() {
   $('html, body').animate({
     scrollTop: 0 }, 500);
 
-}
+  }
