@@ -1,4 +1,7 @@
 # MIPS Simulator
+A simple MIPS pipeline CPU simulator demonstrating the effects of different instructions
+on clock cycles, registers, and memory. Step through to view effects closer or execute all instructions
+to see the final results. 
 
 ## Input File Format <a href="https://github.com/hunterhedges/mipsSimulator/tree/master/sampleinputs">(Sample Inputs)</a>
 
