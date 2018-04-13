@@ -427,7 +427,7 @@ function displayDecodedInstructions() {
   }
 
   $('html, body').animate({
-    scrollTop: $("#decodedInstructionsContainer").offset().top
+    scrollTop: $("#decodedInstructionsContainer").offset().top - 20
   }, 500);
 
 }
