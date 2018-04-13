@@ -42,11 +42,11 @@ $(function() {
 
   $("#uploadContainer").on("drop", handleFileOnUpload);
 
-  $('input[type="file"]').change(handleFileOnUpload);
+  $("input[type='file']").change(handleFileOnUpload);
 
-  $("#uploadLink").on('click', function(event){
+  $("#uploadLink").on("click", function(event){
     event.preventDefault();
-    $("#file:hidden").trigger('click');
+    $("#file:hidden").trigger("click");
   });
 
 });
@@ -58,6 +58,27 @@ function canDoDragAndDrop() {
 
   return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) &&
   'FormData' in window && 'FileReader' in window;
+}
+
+// Load sample input file from sampleInputs folder and run program
+function loadDemoFile() {
+
+  $.get( "https://raw.githubusercontent.com/hunterhedges/mipsSimulator/master/sampleinputs/sample_1.txt", function( data ) {
+
+    var fileContent = data;
+
+    fileContent = fileContent.toLowerCase();
+
+    reset();
+
+    loadRegisters(parseSection(fileContent, sections.registers));
+    loadMemory(parseSection(fileContent, sections.memory));
+    loadDecodedCode(parseSection(fileContent, sections.code));
+
+    displayDecodedInstructions();
+
+  });
+
 }
 
 // Handler function for file upload or file drop event
@@ -73,6 +94,8 @@ function handleFileOnUpload(event) {
   else if(event.type == "change") {
     droppedFile = $("#file")[0].files[0];
   }
+
+  console.log(droppedFile);
 
   if(droppedFile.type.includes("text")) {
     const reader = new FileReader();
@@ -438,5 +461,8 @@ function reset() {
   memory = {};
   decodedCode = [];
   warnings = [];
+
+  $('html, body').animate({
+    scrollTop: 0 }, 500);
 
 }

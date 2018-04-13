@@ -73,6 +73,13 @@ footer {
 	background-color: #e6e6e6;
 }
 
+.demo-link {
+	position: absolute;
+	top: 10px;
+	right: 20px;
+	font-size: 16px;
+}
+
 /***** Decoded Instruction Section *****/
 .decoded-instructions-container {
 	display: none;
@@ -80,8 +87,8 @@ footer {
 	border: 3px dotted black;
 	font-size: 22px;
 	padding: 10px;
-	margin-top: 10px;
-	margin-bottom: 10px;
+	margin-top: 20px;
+	margin-bottom: 20px;
 }
 
 .decoded-instructions-container h4 {
@@ -119,6 +126,11 @@ footer {
 @media (min-width: 992px) {
 	.upload-icon {
 		width: 35%;
+	}
+
+	.upload-container {
+		margin-top: 20px;
+		margin-bottom: 20px;
 	}
 }
 
