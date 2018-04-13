@@ -1,11 +1,10 @@
-// MIPS INSTRUCTIONS
 
-var registerStates = [];
-var memoryStates = [];
-
-/* Return the decimal value of binary from 
- * characters between 6 - 11 representing
- * rs in MIPS instructions */ 
+// Read rs section of binary MIPS instruction which
+// is indices between 6 and 11.
+// Params:
+//	string of MIPS 32 bit binary instruction
+// Return:
+//	decimal value of rs
 function parseRs(codeString) {
 
 	var rs = "";
@@ -17,9 +16,12 @@ function parseRs(codeString) {
 	return parseInt(rs, 2);
 }
 
-/* Return the decimal value of binary from 
- * characters between 11 - 16 representing
- * rt in MIPS instructions */ 
+// Read rt section of binary MIPS instruction which
+// is indices between 11 and 16.
+// Params:
+//	string of MIPS 32 bit binary instruction
+// Return:
+//	decimal value of rt
 function parseRt(codeString) {
 
 	var rt = "";
@@ -31,9 +33,12 @@ function parseRt(codeString) {
 	return parseInt(rt, 2);
 }
 
-/* Return the decimal value of binary from 
- * characters between 16 - 21 representing
- * rd in MIPS instructions */ 
+// Read rd section of binary MIPS instruction which
+// is indices between 16 and 21.
+// Params:
+//	string of MIPS 32 bit binary instruction
+// Return:
+//	decimal value of rd
 function parseRd(codeString) {
 
 	var rd = "";
@@ -45,9 +50,12 @@ function parseRd(codeString) {
 	return parseInt(rd, 2);
 }
 
-/* Return the decimal value of binary from 
- * characters between 16 - 32 representing
- * offset in MIPS instructions */ 
+// Read offset section of binary MIPS instruction which
+// is indices between 16 and 32.
+// Params:
+//	string of MIPS 32 bit binary instruction
+// Return:
+//	decimal value of offset
 function parseOffset(codeString) {
 
 	var offset = "";
@@ -59,9 +67,13 @@ function parseOffset(codeString) {
 	return parseInt(offset, 2);
 }
 
-/* Return the decimal value of binary from 
- * characters between 16 - 32 representing
- * immediate in MIPS instructions */ 
+// Read immediate section of binary MIPS instruction which
+// is indices between 16 and 32. Check whether the value is
+// negative and convert appropriately.
+// Params:
+//	string of MIPS 32 bit binary instruction
+// Return:
+//	decimal value of immediate
 function parseImm(codeString) {
 
 	var imm = "";
@@ -71,130 +83,122 @@ function parseImm(codeString) {
 	}
 
 	// Check immediate is negative
-	if(imm.charAt(0) == "1") {
-		imm = parseInt(imm, 2);
-		imm = uintToInt(imm, 10);
-	}
-	else {
-		imm = parseInt(imm, 2);
-	}
+	imm = parseInt(imm, 2);
+	imm = uintToInt(imm, 10);
 
 	return imm;
 }
 
-/* lw rt, offset(rs)
- * 1000 11ss ssst tttt iiii iiii iiii iiii*/
-function loadWord(codeString) {
-	
-	instructionCache.push(codeString);
+// Convert unsigned decimal to signed
+// Params:
+//	uint: unsigned decimal
+//	nbit: number base
+// Return:
+//	signed decimal
+function uintToInt(uint, nbit) {
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var offset = parseOffset(codeString);
+	nbit = +nbit || 32;
 
-	instructions.push("LW R" + rt + ", " + offset + "(R" + rs + ") <br />");
+	uint <<= 32 - nbit;
+	uint >>= 32 - nbit;
+
+	return uint;
 }
 
-/* sw rt, offset(rs)
- * 1010 11ss ssst tttt iiii iiii iiii iiii*/
-function storeWord(codeString) {
-	
-	instructionCache.push(codeString);
+// MIPS INSTRUCTIONS
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var offset = parseOffset(codeString);
-
-	instructions.push("SW R" + rt + ", " + offset + "(R" + rs + ") <br />");
-
-	memory[rs + offset] = registers["r" + rt];
-}
-
-/* add rd, rs, rt
- * rd = rs + rt
- * 0000 00ss ssst tttt dddd d000 0010 0000*/
-function add(codeString) {
-
-	instructionCache.push(codeString);
+// add rd, rs, rt
+// rd = rs + rt
+// 0000 00ss ssst tttt dddd d000 0010 0000
+function decodeAdd(codeString) {
 
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var rd = parseRd(codeString);
 
-	instructions.push("ADD R" + rd + ", R" + rs + ", R" + rt + "<br />");
+	return "ADD R" + rd + ", R" + rs + ", R" + rt;
 }
 
-/* addi rs, rt, imm
- * rt = rs + imm
- * 0010 00ss ssst tttt iiii iiii iiii iiii*/
-function addi(codeString) {
-	
-	instructionCache.push(codeString);
+// addi rs, rt, imm
+// rt = rs + imm
+// 0010 00ss ssst tttt iiii iiii iiii iiii
+function decodeAddi(codeString) {
 
-	var i = 0;
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var imm = parseImm(codeString);
 
-	instructions.push("ADDI R" + rt + ", R" + rs + ", " + imm + "<br />");
+	return "ADDI R" + rt + ", R" + rs + ", " + imm;
 }
 
-/* sub rd, rs, rt
- * rd = rs - rt
- * 0000 00ss ssst tttt dddd d000 0010 0010*/
-function sub(codeString) {
-	
-	instructionCache.push(codeString);
-
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString); 
-	var rd = parseRd(codeString);
-
-	instructions.push("SUB R" + rd + ", R" + rs + ", R" + rt + "<br />");
-}
-
-/* slt rd, rs, rt
- * if rs is less than rt, rd = 1 else rd = 0
- * 0000 00ss ssst tttt dddd d000 0010 1010 */
-function setLessThan(codeString) {
-	
-	instructionCache.push(codeString);
-
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var rd = parseRd(codeString);
-
-	instructions.push("SLT R" + rd + ", R" + rs + ", R" + rt + "<br />");
-}
-
-/* beq rs, rt, offset
- * if(rs == rt) pc += offset * 4*/
-function branchOnEqual(codeString) {
-	
-	instructionCache.push(codeString);
+// beq rs, rt, offset
+// if(rs == rt) advance pc offset << 2
+// 0001 00ss ssst tttt iiii iiii iiii iiii
+function decodeBranchOnEqual(codeString) {
 
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var offset = parseOffset(codeString);
 
-	instructions.push("BEQ R" + rs + ", " + rt + ", " + offset + "<br />");
+	return "BEQ R" + rs + ", " + rt + ", " + offset;
 }
 
-/* bne rs, rt, offset
- * if(rs != rt) pc += offset * 4*/
-function branchNotEqual(codeString) {
-	
-	instructionCache.push(codeString);
+// bne rs, rt, offset
+// if(rs != rt) advance pc offset << 2
+// 0001 01ss ssst tttt iiii iiii iiii iiii
+function decodeBranchNotEqual(codeString) {
 
 	var rs = parseRs(codeString);
 	var rt = parseRt(codeString);
 	var offset = parseOffset(codeString);
 
-	instructions.push("BNE R" + rs + ", " + rt + ", " + offset + "<br />");
+	return "BNE R" + rs + ", " + rt + ", " + offset;
 }
 
+// lw rt, offset(rs)
+// rt = MEM[rs + offset]
+// 1000 11ss ssst tttt iiii iiii iiii iiii
+function decodeLoadWord(codeString) {
 
+	var rs = parseRs(codeString);
+	var rt = parseRt(codeString);
+	var offset = parseOffset(codeString);
 
+	return "LW R" + rt + ", " + offset + "(R" + rs + ")";
+}
 
+// sw rt, offset(rs)
+// MEM[rs + offset] = rt
+// 1010 11ss ssst tttt iiii iiii iiii iiii
+function decodeStoreWord(codeString) {
 
+	var rs = parseRs(codeString);
+	var rt = parseRt(codeString);
+	var offset = parseOffset(codeString);
 
+	return "SW R" + rt + ", " + offset + "(R" + rs + ")";
+}
+
+// slt rd, rs, rt
+// if(rs < rt) rd = 1, else rd = 0
+// 0000 00ss ssst tttt dddd d000 0010 1010
+function decodeSetOnLessThan(codeString) {
+
+	var rs = parseRs(codeString);
+	var rt = parseRt(codeString);
+	var rd = parseRd(codeString);
+
+	return "SLT R" + rd + ", R" + rs + ", R" + rt;
+}
+
+// sub rd, rs, rt
+// rd = rs - rt
+// 0000 00ss ssst tttt dddd d000 0010 0010
+function decodeSub(codeString) {
+
+	var rs = parseRs(codeString);
+	var rt = parseRt(codeString);
+	var rd = parseRd(codeString);
+
+	return "SUB R" + rd + ", R" + rs + ", R" + rt;
+}

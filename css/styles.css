@@ -2,30 +2,26 @@ html, body {
 	height: 100%;
 }
 
-.page-wrap {
+a:hover {
+	text-decoration: none;
+}
+
+#content-wrap {
 	min-height: 100%;
-	/* equal to footer height */
-	margin-bottom: -200px; 
-}
-.page-wrap:after {
-	content: "";
-	display: block;
 }
 
-.overlay {
-	background: url('https://github.com/hunterhedges/mipsSimulator/blob/master/images/overlay.png?raw=true'); 
-	background-color: #041942;
+#main {
+	overflow: auto;
+	padding-bottom: 75px;
+	padding-top: 5px;
+	padding-right: 5px;
+	padding-left: 5px;
 }
 
-/***** Nav Section *****/
-
-.nav-wrapper {
-	max-width: 1300px;
-	width: 80%;
-	margin: 0 auto;
-}
-
+/***** Navbar *****/
 .navbar {
+	background: url('https://github.com/hunterhedges/mipsSimulator/blob/master/images/overlay.png?raw=true');
+	background-color: #041942;
 	font-family: 'Open Sans', sans-serif;
 	color: #ecf0f1;
 }
@@ -38,72 +34,95 @@ html, body {
 	color: #95a5a6;
 }
 
-.nav-wrapper .navbar-toggler-icon {
+.navbar-toggler {
+	border: 1px solid #ffffff;
+}
+
+.navbar-toggler-icon {
 	background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255, 255, 255, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
-	z-index: 1000;
 }
 
-.nav-wrapper .navbar-toggler {
-	border-color: rgb(255,255,255);
-} 
-
-.nav-shift {
-	float: right;
-}
-
-/***** Footer Section *****/
-
+/***** Footer *****/
 footer {
-	margin-top: 75px;
+	position: relative;
+	clear: both;
+	background: url('https://github.com/hunterhedges/mipsSimulator/blob/master/images/overlay.png?raw=true');
+	background-color: #041942;
+	height: 75px;
+	margin-top: -75px;
 }
 
-footer, .page-wrap:after {
-	height: 200px; 
-}
-
+/***** Upload Section *****/
 .upload-container {
-	max-width: 500px;
-	height: 500px;
+	min-height: 500px;
+	display: flex;
 	border: 3px dotted black;
-	margin-top: 20px;
-	margin-bottom: 20px;
+	font-size: 22px;
 }
 
 .file-input {
-
+	display: none;
 }
 
-.drop-file-icon {
-	width: 25%;
+.upload-icon {
+	max-width: 100%;
+	width: 50%;
 }
 
 .file-hover {
-	background-color: gray;
+	background-color: #e6e6e6;
 }
 
-.instruction-container {
+/***** Decoded Instruction Section *****/
+.decoded-instructions-container {
 	display: none;
-	max-width: 500px;
-	height: 500px;
+	min-height: 500px;
 	border: 3px dotted black;
-	margin-top: 20px;
+	font-size: 22px;
+	padding: 10px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.decoded-instructions-container h4 {
 	margin-bottom: 20px;
 }
 
-.control-panel {
-	display: none;
-	margin-bottom: 20px;
+.decoded-instructions-container p {
+	text-align: left;
+	font-size: 16px;
 }
 
-.simulation-container {
-	display: none;
-	max-width: 500px;
-	height: 500px;
-	border: 3px dotted black;
-	margin-top: 20px;
-	margin-bottom: 50px;
+/***** Simulation Section *****/
+
+
+
+
+/***** iPhone 5 *****/
+@media(max-width: 320px) {
+	.navbar-brand {
+		font-size: 18px;
+	}
 }
 
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
 
+}
 
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
 
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+	.upload-icon {
+		width: 35%;
+	}
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+
+}
