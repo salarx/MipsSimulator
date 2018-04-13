@@ -11,10 +11,10 @@ by a new line.
 Registers span from register 0 to register 31 with register 0 being 
 permanently set to the value 0.
 
-Example: 
-REGISTERS
-R1 15
-30 1234
+Example:   
+REGISTERS  
+R1 15  
+30 1234  
 
 ### Setting Initial Values of Memory
 This section is began with the word "memory" (not case sensitive).
@@ -24,15 +24,23 @@ Each memory location needs to be separated by a new line.
 
 Memory locations need to be positive and divisible by 4.
 
-Example:
-MEMORY
-M4 100
-16 255
+Example:  
+MEMORY  
+M4 100  
+16 255  
 
 ### Code Section
 This section is began with the word "code" (not case sensitive).
 Each line of this section needs to be a 32 - bit MIPS instruction that is 
 supported by the program. [See Below](#supported-mips-instructions)
+
+Each line of code can be separated with a number of spaces. 
+
+Example:   
+CODE  
+0000 0000 1110 0101 0101 1000 0010 0000  
+00100000 1010 10100000 0001 10101010  
+00000001010101010101100000100010  
 
 ## Supported MIPS Instructions
 - [ADD - add (with overflow)](#add---add-with-overflow)
