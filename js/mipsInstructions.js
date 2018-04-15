@@ -89,6 +89,22 @@ function parseImm(codeString) {
 	return imm;
 }
 
+function setRegisterDefault(registerNumber) {
+
+	if(!registers[registerNumber]) {
+		registers[registerNumber] = 0;
+	}
+
+}
+
+function setMemoryDefault(memoryLocation) {
+
+	if(!memory[memoryLocation]) {
+		memory[memoryLocation] = 0;
+	}
+
+}
+
 // Convert unsigned decimal to signed
 // Params:
 //	uint: unsigned decimal
@@ -105,100 +121,259 @@ function uintToInt(uint, nbit) {
 	return uint;
 }
 
+function ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset) {
+
+	this.type = type;
+	this.registerState = registerState;
+	this.memoryState = memoryState;
+	this.shouldBranch = shouldBranch;
+	this.branchOffset = branchOffset;
+
+}
+
 // MIPS INSTRUCTIONS
 
 // add rd, rs, rt
 // rd = rs + rt
 // 0000 00ss ssst tttt dddd d000 0010 0000
-function decodeAdd(codeString) {
+function add(instructionBinary, action) {
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var rd = parseRd(codeString);
+	var rs = parseRs(instructionBinary);
+	var rt = parseRt(instructionBinary);
+	var rd = parseRd(instructionBinary);
 
-	return "ADD R" + rd + ", R" + rs + ", R" + rt;
+	var result;
+
+	if(action == "decode") {
+		return "ADD R" + rd + ", R" + rs + ", R" + rt;
+	}
+	else if(action == "execute") {
+		var type = "R";
+
+		setRegisterDefault(rs);
+		setRegisterDefault(rt);
+
+		var registerState = { register: rd, value: registers[rs] + registers[rt] };
+		var memoryState = null;
+		var shouldBranch = false;
+		var branchOffset = 0;
+
+		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+	}
+
 }
 
 // addi rs, rt, imm
 // rt = rs + imm
 // 0010 00ss ssst tttt iiii iiii iiii iiii
-function decodeAddi(codeString) {
+function addi(instructionBinary, action) {
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var imm = parseImm(codeString);
+	var rs = parseRs(instructionBinary);
+	var rt = parseRt(instructionBinary);
+	var imm = parseImm(instructionBinary);
 
-	return "ADDI R" + rt + ", R" + rs + ", " + imm;
+	if(action == "decode") {
+		return "ADDI R" + rt + ", R" + rs + ", " + imm;
+	}
+	else if(action == "execute") {
+		var type = "I";
+
+		setRegisterDefault(rs);
+
+		var registerState = { register: rt, value: registers[rs] + imm };
+		var memoryState = null;
+		var shouldBranch = false;
+		var branchOffset = 0;
+
+		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+	}
+
 }
 
 // beq rs, rt, offset
 // if(rs == rt) advance pc offset << 2
 // 0001 00ss ssst tttt iiii iiii iiii iiii
-function decodeBranchOnEqual(codeString) {
+function branchOnEqual(instructionBinary, action) {
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var offset = parseOffset(codeString);
+	var rs = parseRs(instructionBinary);
+	var rt = parseRt(instructionBinary);
+	var offset = parseOffset(instructionBinary);
 
-	return "BEQ R" + rs + ", " + rt + ", " + offset;
+	if(action == "decode") {
+		return "BEQ R" + rs + ", R" + rt + ", " + offset;
+	}
+	else if(action == "execute") {
+		var type = "I";
+		var registerState = null;
+		var memoryState = null;
+		var shouldBranch = false;
+		var branchOffset = 0;
+
+		setRegisterDefault(rs);
+		setRegisterDefault(rt);
+
+		if(registers[rs] == registers[rt]) {
+			shouldBranch = true;
+			branchOffset = offset;
+		}
+
+		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+
+	}
+
 }
 
 // bne rs, rt, offset
 // if(rs != rt) advance pc offset << 2
 // 0001 01ss ssst tttt iiii iiii iiii iiii
-function decodeBranchNotEqual(codeString) {
+function branchNotEqual(instructionBinary, action) {
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var offset = parseOffset(codeString);
+	var rs = parseRs(instructionBinary);
+	var rt = parseRt(instructionBinary);
+	var offset = parseOffset(instructionBinary);
 
-	return "BNE R" + rs + ", " + rt + ", " + offset;
+	if(action == "decode") {
+		return "BNE R" + rs + ", R" + rt + ", " + offset;
+	}
+	else if(action == "execute") {
+		var type = "I";
+		var registerState = null;
+		var memoryState = null;
+		var shouldBranch = false;
+		var branchOffset = 0;
+
+		setRegisterDefault(rs);
+		setRegisterDefault(rt);
+
+		if(registers[rs] != registers[rt]) {
+			shouldBranch = true;
+			branchOffset = offset;
+		}
+
+		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+	}
+
 }
 
 // lw rt, offset(rs)
 // rt = MEM[rs + offset]
 // 1000 11ss ssst tttt iiii iiii iiii iiii
-function decodeLoadWord(codeString) {
+function loadWord(instructionBinary, action) {
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var offset = parseOffset(codeString);
+	var rs = parseRs(instructionBinary);
+	var rt = parseRt(instructionBinary);
+	var offset = parseOffset(instructionBinary);
 
-	return "LW R" + rt + ", " + offset + "(R" + rs + ")";
+	if(action == "decode") {
+		return "LW R" + rt + ", " + offset + "(R" + rs + ")";
+	}
+	else if(action == "execute") {
+		var type = "LW";
+
+		setRegisterDefault(rt);
+		setRegisterDefault(rs);
+		setMemoryDefault(rs + offset);
+
+		var registerState = { register: rt, value: memory[registers[rs] + offset] };
+		var memoryState = null;
+		var shouldBranch = false;
+		var branchOffset = 0;
+
+		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+
+	}
+
 }
 
 // sw rt, offset(rs)
 // MEM[rs + offset] = rt
 // 1010 11ss ssst tttt iiii iiii iiii iiii
-function decodeStoreWord(codeString) {
+function storeWord(instructionBinary, action) {
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var offset = parseOffset(codeString);
+	var rs = parseRs(instructionBinary);
+	var rt = parseRt(instructionBinary);
+	var offset = parseOffset(instructionBinary);
 
-	return "SW R" + rt + ", " + offset + "(R" + rs + ")";
+	if(action == "decode") {
+		return "SW R" + rt + ", " + offset + "(R" + rs + ")";
+	}
+	else if(action == "execute") {
+		var type = "SW";
+
+		setRegisterDefault(rt);
+		setRegisterDefault(rs);
+		setMemoryDefault(rs + offset);
+
+		var registerState = null;
+		var memoryState = { memoryLocation: registers[rs] + offset, value: registers[rt] };
+		var shouldBranch = false;
+		var branchOffset = 0;
+
+		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+	}
+
 }
 
 // slt rd, rs, rt
 // if(rs < rt) rd = 1, else rd = 0
 // 0000 00ss ssst tttt dddd d000 0010 1010
-function decodeSetOnLessThan(codeString) {
+function setOnLessThan(instructionBinary, action) {
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var rd = parseRd(codeString);
+	var rs = parseRs(instructionBinary);
+	var rt = parseRt(instructionBinary);
+	var rd = parseRd(instructionBinary);
 
-	return "SLT R" + rd + ", R" + rs + ", R" + rt;
+	if(action == "decode") {
+		return "SLT R" + rd + ", R" + rs + ", R" + rt;
+	}
+	else if(action == "execute") {
+		var type = "R";
+
+		setRegisterDefault(rs);
+		setRegisterDefault(rt);
+
+		var registerState;
+
+		if(registers[rs] < registers[rt]) {
+			registerState = { register: rd, value: 1 };
+		}
+		else {
+			registerState = { register: rd, value: 0 };
+		}
+
+		var memoryState = null;
+		var shouldBranch = false;
+		var branchOffset = 0;
+
+		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+	}
+
 }
 
 // sub rd, rs, rt
 // rd = rs - rt
 // 0000 00ss ssst tttt dddd d000 0010 0010
-function decodeSub(codeString) {
+function sub(instructionBinary, action) {
 
-	var rs = parseRs(codeString);
-	var rt = parseRt(codeString);
-	var rd = parseRd(codeString);
+	var rs = parseRs(instructionBinary);
+	var rt = parseRt(instructionBinary);
+	var rd = parseRd(instructionBinary);
 
-	return "SUB R" + rd + ", R" + rs + ", R" + rt;
+	if(action == "decode") {
+		return "SUB R" + rd + ", R" + rs + ", R" + rt;
+	}
+	else if(action == "execute") {
+		var type = "R";
+
+		setRegisterDefault(rs);
+		setRegisterDefault(rt);
+
+		var registerState = { register: rd, value: registers[rs] - registers[rt] };
+		var memoryState = null;
+		var shouldBranch = false;
+		var branchOffset = 0;
+
+		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+	}
+
 }

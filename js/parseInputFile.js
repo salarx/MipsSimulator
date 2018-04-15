@@ -4,6 +4,8 @@ var memory;
 var decodedCode;
 var warnings;
 
+const DECODE = "decode";
+
 var sections = {
   registers: {
     sectionName: "registers",
@@ -192,6 +194,10 @@ function loadRegisters(registerArray) {
       }
 
       if(isValidValue(registerValue)) {
+
+        registerValue = registerValue.trim();
+        registerValue = parseInt(registerValue);
+
         registers[registerNumber] = registerValue;
       }
     }
@@ -270,6 +276,10 @@ function loadMemory(memoryArray) {
       }
 
       if(isValidValue(memoryValue)) {
+
+        memoryValue = memoryValue.trim();
+        memoryValue = parseInt(memoryValue);
+
         memory[memoryLocation] = memoryValue;
       }
     }
@@ -347,13 +357,13 @@ function loadDecodedCode(codeArray) {
       }
 
       if(funct == "100000") {
-        decodedCode.push(decodeAdd(codeArray[i]));
+        decodedCode.push(add(codeArray[i], DECODE));
       }
       else if(funct == "100010") {
-        decodedCode.push(decodeSub(codeArray[i]));
+        decodedCode.push(sub(codeArray[i], DECODE));
       }
       else if(funct == "101010") {
-        decodedCode.push(decodeSetOnLessThan(codeArray[i]));
+        decodedCode.push(setOnLessThan(codeArray[i], DECODE));
       }
       else {
         warnings.push("Code <strong>" + codeArray[i] + "</strong> has an invalid funct code.");
@@ -361,19 +371,19 @@ function loadDecodedCode(codeArray) {
       }
       break;
       case "001000":
-      decodedCode.push(decodeAddi(codeArray[i]));
+      decodedCode.push(addi(codeArray[i], DECODE));
       break;
       case "000100":
-      decodedCode.push(decodeBranchOnEqual(codeArray[i]));
+      decodedCode.push(branchOnEqual(codeArray[i], DECODE));
       break;
       case "000101":
-      decodedCode.push(decodeBranchNotEqual(codeArray[i]));
+      decodedCode.push(branchNotEqual(codeArray[i], DECODE));
       break;
       case "100011":
-      decodedCode.push(decodeLoadWord(codeArray[i]));
+      decodedCode.push(loadWord(codeArray[i], DECODE));
       break;
       case "101011":
-      decodedCode.push(decodeStoreWord(codeArray[i]));
+      decodedCode.push(storeWord(codeArray[i], DECODE));
       break;
       default:
       warnings.push("Code <strong>" + codeArray[i] + "</strong> has an invalid opcode.");
