@@ -100,9 +100,13 @@ footer {
 }
 
 /***** Simulation Section *****/
-
-
-
+.simulation-results-container {
+	display: none;
+	border: 3px dotted black;
+	padding: 10px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
 
 /***** iPhone 5 *****/
 @media(max-width: 320px) {

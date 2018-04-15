@@ -1,93 +1,102 @@
-var instructionCache = [];
 
-var pcCounter = 0;
-var cycleCount = 0;
+var instructions;
+var registerStates;
+var memoryStates;
+var cycleData;
+
+var currentStep = 0;
+
+function stepThrough() {
+
+	simulate();
+
+	$("#simulationResultsContainer").show();
+	displayInstructions(0);
+	displayRegisters(0);
+	displayMemory(0);
+
+	$('html, body').animate({
+		scrollTop: $("#simulationResultsContainer").offset().top - 20
+	}, 500);
+
+}
+
+function nextStep() {
+
+	displayInstructions(currentStep + 1);
+	displayRegisters(currentStep + 1);
+	displayMemory(currentStep + 1);
+
+}
+
+function previousStep() {
+
+	displayInstructions(currentStep - 1);
+	displayRegisters(currentStep - 1);
+	displayMemory(currentStep - 1);
+
+}
+
+function executeAll() {
+
+	simulate();
+
+	$("#simulationResultsContainer").show();
+	displayInstructions(instructions.length - 1);
+	displayRegisters(registerStates.length - 1);
+	displayMemory(memoryStates.length - 1);
+	displayCycleData();
+
+	$('html, body').animate({
+		scrollTop: $("#simulationResultsContainer").offset().top - 20
+	}, 500);
+
+}
+
+function displayInstructions(currentInstruction) {
+
+	for(var i = 0; i < instructions.length; i++) {
+		if(i == currentInstruction) {
+			$("#simulationInstructions").append("<tr><td>&rarr;</td><td>" + decodedCode[i] + "</td></tr>");
+		}
+		else {
+			$("#simulationInstructions").append("<tr><td></td><td>" + decodedCode[i] + "</td></tr>");
+		}
+	}
+
+}
+
+function displayRegisters(currentRegisterState) {
+
+	for(var key in registerStates[currentRegisterState]) {
+		$("#simulationRegisters").append("<tr><td>R" + key + "</td><td>" + registerStates[currentRegisterState][key] + "</td></tr>");
+	}
+}
+
+function displayMemory(currentMemoryState) {
+
+	for(var key in memoryStates[currentMemoryState]) {
+		$("#simulationMemory").append("<tr><td>" + key + "</td><td>" + memoryStates[currentMemoryState][key] + "</td></tr>");
+	}
+
+}
+
+function displayCycleData(currentCycleData) {
+
+
+
+
+}
 
 function simulate() {
 
-	$("#simulationBox").css("display", "block");
+	registerStates.push(registers);
+	memoryStates.push(memory);
 
-	$('html, body').animate({
-        scrollTop: $("#simulationBox").offset().top
-    }, 500);
+	for(var i = 0; i < instructions.length; i++) {
 
-   // for(var i = 0; i < instructionCache.length; i++) {
-   // 	instructionFetch();
-   // }
 
-   displaySimulationResults();
 
-}
-
-function instructionFetch() {
-
-	instructions[pcCounter]
-}
-
-function instructionDecode() {
-
-}
-
-function execute() {
-
-}
-
-function memoryAccess() {
-
-}
-
-function writeBack() {
-
-}
-
-function getCycleCountDisplay() {
-
-	var cycleCountDisplay = "<tr>";
-	cycleCount = instructionCache.length * 5;
-
-   for(var i = 1; i <= cycleCount; i++) {
-
-   		cycleCountDisplay += "<td>" + i + "</td>";
-   }
-
-   cycleCountDisplay += "</tr>";
-
-   return cycleCountDisplay;
-}
-
-function getInstructionRowDisplay() {
-
-	var instructionRowDisplay = "<tr>";
-
-	instructionRowDisplay += "<tr><td>I" + 1 + " IF</td>\
-								  <td>I" + 1 + " ID</td>\
-								  <td>I" + 1 + " EX</td>\
-								  <td>I" + 1 + " MEM</td>\
-								  <td>I" + 1 + " WB</td></tr>";
-
-	for(var i = 2; i <= instructionCache.length; i++) {
-
-		var colspan = (i - 1) * 5;
-
-		instructionRowDisplay += "<tr><td colspan=" + colspan + ">\
-								  <td>I" + i + " IF</td>\
-								  <td>I" + i + " ID</td>\
-								  <td>I" + i + " EX</td>\
-								  <td>I" + i + " MEM</td>\
-								  <td>I" + i + " WB</td></tr>";
 	}
 
-	return instructionRowDisplay;
-}
-
-function displaySimulationResults() {
-
-	var cycleCountDisplay = getCycleCountDisplay();
-	var instructionRowDisplay = getInstructionRowDisplay();
-
-	$("#simulationBox").append("<center>SIMULATION RESULTS</center>");
-
-	$("#simulationBox").append("<div class='table-responsive'><table class='table table-bordered table-sm'>\
-   							    <tr><td class='text-center' colspan=" + cycleCount + ">Clock Cycle</td></tr>" +
-           					    cycleCountDisplay + instructionRowDisplay + "</table></div>");
 }

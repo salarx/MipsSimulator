@@ -7,7 +7,7 @@ var warnings;
 var sections = {
   registers: {
     sectionName: "registers",
-    stopCharacters: ["c", "m"]
+    stopCharacters: ["m", "c"]
   },
   memory: {
     sectionName: "memory",
@@ -63,20 +63,9 @@ function canDoDragAndDrop() {
 // Load sample input file from sampleInputs folder and run program
 function loadDemoFile() {
 
-  $.get( "https://raw.githubusercontent.com/hunterhedges/mipsSimulator/master/sampleinputs/sample_1.txt", function( data ) {
+  $.get("https://raw.githubusercontent.com/hunterhedges/mipsSimulator/master/sampleinputs/sample_1.txt", function( data ) {
 
-    var fileContent = data;
-
-    fileContent = fileContent.toLowerCase();
-
-    reset();
-
-    loadRegisters(parseSection(fileContent, sections.registers));
-    loadMemory(parseSection(fileContent, sections.memory));
-    loadDecodedCode(parseSection(fileContent, sections.code));
-
-    displayDecodedInstructions();
-    displayWarnings();
+    main(data);
 
   });
 
@@ -106,18 +95,7 @@ function handleFileOnUpload(event) {
         showModal("Error Uploading File", "File is empty");
       }
       else {
-
-        fileContent = fileContent.toLowerCase();
-
-        reset();
-
-        loadRegisters(parseSection(fileContent, sections.registers));
-        loadMemory(parseSection(fileContent, sections.memory));
-        loadDecodedCode(parseSection(fileContent, sections.code));
-
-        displayDecodedInstructions();
-        displayWarnings();
-
+        main(fileContent);
       }
     };
 
@@ -126,6 +104,27 @@ function handleFileOnUpload(event) {
   else {
     showModal("Error Uploading File", "Incorrect file type");
   }
+
+}
+
+// Primary function to run program. Reset, load registers,
+// memory, and decoded instructions then display.
+// Params:
+//  fileContent: string of text from file
+// Return:
+//  None
+function main(fileContent) {
+
+  fileContent = fileContent.toLowerCase();
+
+  reset();
+
+  loadRegisters(parseSection(fileContent, sections.registers));
+  loadMemory(parseSection(fileContent, sections.memory));
+  loadDecodedCode(parseSection(fileContent, sections.code));
+
+  displayDecodedInstructions();
+  displayWarnings();
 
 }
 
@@ -187,6 +186,11 @@ function loadRegisters(registerArray) {
     }
 
     if(isValidRegister(registerNumber)) {
+
+      if(registerNumber.charAt(0) == "r") {
+        registerNumber = registerNumber.replace("r", "");
+      }
+
       if(isValidValue(registerValue)) {
         registers[registerNumber] = registerValue;
       }
@@ -260,6 +264,11 @@ function loadMemory(memoryArray) {
     }
 
     if(isValidMemoryLocation(memoryLocation)) {
+
+      if(memoryLocation.charAt(0) == "m") {
+        memoryLocation = memoryLocation.replace("m", "");
+      }
+
       if(isValidValue(memoryValue)) {
         memory[memoryLocation] = memoryValue;
       }
@@ -322,10 +331,10 @@ function loadDecodedCode(codeArray) {
 
     codeArray[i] = codeArray[i].trim();
     codeArray[i] = codeArray[i].replace(/ /g,"");
-    console.log(codeArray[i]);
 
     var opcode = "";
     var funct = "";
+    var isValid = true;
 
     for(var j = 0; j < 6; j++) {
       opcode += codeArray[i].charAt(j);
@@ -348,6 +357,7 @@ function loadDecodedCode(codeArray) {
       }
       else {
         warnings.push("Code <strong>" + codeArray[i] + "</strong> has an invalid funct code.");
+        isValid = false;
       }
       break;
       case "001000":
@@ -367,7 +377,11 @@ function loadDecodedCode(codeArray) {
       break;
       default:
       warnings.push("Code <strong>" + codeArray[i] + "</strong> has an invalid opcode.");
+      isValid = false;
       break;
+    }
+    if(isValid) {
+      instructions.push(codeArray[i]);
     }
   }
 
@@ -412,7 +426,7 @@ function displayDecodedInstructions() {
 
   $("#decodedInstructions").append("REGISTERS<br />");
   for(var key in registers) {
-    $("#decodedInstructions").append(key.toUpperCase() + " " + registers[key] + "<br />");
+    $("#decodedInstructions").append("R" + key + " " + registers[key] + "<br />");
   }
 
   if(registers.length == 0) {
@@ -423,7 +437,7 @@ function displayDecodedInstructions() {
 
   $("#decodedInstructions").append("MEMORY<br />");
   for(var key in memory) {
-    $("#decodedInstructions").append(key.toUpperCase() + " " + memory[key] + "<br />");
+    $("#decodedInstructions").append(key + " " + memory[key] + "<br />");
   }
 
   if(memory.length == 0) {
@@ -485,13 +499,24 @@ function reset() {
   $("#decodedInstructionsContainer").hide();
   $("#decodedInstructions").html("");
 
-  // Simulation Section hide
-  // Simulation Section clear
+  $("#simulationContainer").hide();
+  $("#simulationInstructions").html("");
+  $("#simulationRegisters").html("");
+  $("#simulationMemory").html("");
+  $("#simulationCycleData").html("");
 
   registers = {};
   memory = {};
   decodedCode = [];
   warnings = [];
+
+  instructions = [];
+  registerStates = [];
+  memoryStates = [];
+  cycleData = [];
+
+  pcCounter = 0;
+  cycleCount = 0;
 
   $('html, body').animate({
     scrollTop: 0 }, 500);

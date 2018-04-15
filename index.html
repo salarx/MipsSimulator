@@ -8,16 +8,12 @@
 
   <!-- Bootstrap CSS -->
   <link href="depends/bootstrap-4.0.0/css/bootstrap.min.css" rel="stylesheet" />
-
   <!-- Site CSS -->
   <link href="css/styles.css" rel="stylesheet" />
-
   <!-- jQuery -->
   <script src="depends/jquery-3.3.1.min.js"></script>
-
   <!-- Bootstrap JS -->
   <script src="depends/bootstrap-4.0.0/js/bootstrap.js"></script>
-
 </head>
 <body>
 
@@ -35,7 +31,7 @@
             <a href="https://github.com/hunterhedges" class="nav-link">github.com/hunterhedges</a>
           </li>
           <li class="nav-item">
-            <a href="https://github.com/hunterhedges/mipsSimulator/#user-content-mips-simulator" class="nav-link">Docs</a>
+            <a href="https://github.com/hunterhedges/mipsSimulator/blob/master/README.md#mips-simulator" class="nav-link">Docs</a>
           </li>
           <li class="nav-item">
             <a href="https://github.com/hunterhedges/mipsSimulator" class="nav-link">Source</a>
@@ -51,19 +47,12 @@
       <div class="container text-center mx-auto">
         <div class="row">
           <div class="col-12 col-md-8 offset-md-2 upload-container" id="uploadContainer">
-
             <a href="#" class="demo-link" onclick="loadDemoFile()">Use Demo File</a>
-
             <div class="justify-content-center align-self-center mx-auto">
-
               <img src="images/upload_icon.png" class="upload-icon" /> <br />
-
               <input class="file-input" type="file" id="file" /> <br />
-
               <a href="#" id="uploadLink">Choose a file</a> <span id="dragDropAvailable">or drag it here</span>
-
             </div>
-
           </div>
         </div>
       </div>
@@ -74,30 +63,100 @@
         <div class="row">
           <div class="col-12 col-md-8 offset-md-2 decoded-instructions-container" id="decodedInstructionsContainer">
             <h4>DECODED INSTRUCTIONS</h4>
-
             <p id="decodedInstructions">
               <!-- Decoded Instructions Inserted Here -->
             </p>
-
             <div class="row p-md-3">
               <div class="col-12 col-md-4 m-1 m-md-0">
                 <button class="btn btn-primary" onclick="reset()">Upload New File</button>
               </div>
               <div class="col-12 col-md-4 m-1 m-md-0">
-                <button class="btn btn-primary">Step Through</button>
+                <button class="btn btn-primary" onclick="stepThrough()">Step Through</button>
               </div>
               <div class="col-12 col-md-4 m-1 m-md-0">
-                <button class="btn btn-primary">Execute All</button>
+                <button class="btn btn-primary" onclick="executeAll()">Execute All</button>
               </div>
             </div>
-
           </div>
         </div>
       </div>
       <!-- End Decoded Instructions Section -->
 
       <!-- Simulation Section -->
-
+      <div class="container simulation-results-container" id="simulationResultsContainer">
+        <div class="row">
+          <div class="col-12 col-md-4 table-responsive">
+            <!-- Instruction Cache Table -->
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th class="text-center" colspan="2">Instructions</th>
+                </tr>
+                <tr>
+                  <th>PC</th>
+                  <th>Instruction</th>
+                </tr>
+              </thead>
+              <tbody id="simulationInstructions">
+                <!-- Instructions Inserted Here -->
+              </tbody>
+            </table>
+          </div>
+          <div class="col-12 col-md-4 table-responsive">
+            <!-- Register Table -->
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th class="text-center" colspan="2">Registers</th>
+                </tr>
+                <tr>
+                  <th>Register</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody id="simulationRegisters">
+                <!-- Register States Inserted Here -->
+              </tbody>
+            </table>
+          </div>
+          <div class="col-12 col-md-4 table-responsive">
+            <!-- Memory Table -->
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th class="text-center" colspan="2">Memory</th>
+                </tr>
+                <tr>
+                  <th>Location</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody id="simulationMemory">
+                <!-- Memory States Inserted Here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12 table-responsive">
+            <!-- Clock Cycles Table -->
+            <table class="table table-bordered table-sm">
+              <thead class="text-center">
+                <tr>
+                  <!-- Set colspan attribute -->
+                  <th id="clockCycleTitle">Clock Cycles</th>
+                </tr>
+                <tr id="simulationCycleNumber">
+                  <!-- Insert Clock Cycle Number -->
+                </tr>
+              </thead>
+              <tbody id="simulationCycleData">
+                <!-- Clock Cycles Data Inserted Here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <!-- End Simulation Section -->
 
     </div> <!-- End Main -->
@@ -113,13 +172,13 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalTitle">Error</h5>
+          <h5 class="modal-title" id="modalTitle"><!-- Modal Title --></h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body" id="modalBody">
-
+          <!-- Modal Body -->
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
