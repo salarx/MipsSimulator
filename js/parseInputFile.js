@@ -509,7 +509,7 @@ function reset() {
   $("#decodedInstructionsContainer").hide();
   $("#decodedInstructions").html("");
 
-  $("#simulationContainer").hide();
+  $("#simulationResultsContainer").hide();
   $("#simulationInstructions").html("");
   $("#simulationRegisters").html("");
   $("#simulationMemory").html("");
@@ -526,7 +526,7 @@ function reset() {
   cycleData = [];
 
   pcCounter = 0;
-  cycleCount = 0;
+  cycleCount = 1;
 
   $('html, body').animate({
     scrollTop: 0 }, 500);

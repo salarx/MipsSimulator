@@ -11,6 +11,9 @@ var cycleCount = 1;
 
 const EXECUTE = "execute";
 
+//
+//
+//
 function stepThrough() {
 
 	simulate();
@@ -26,22 +29,44 @@ function stepThrough() {
 
 }
 
+//
+//
+//
 function nextStep() {
+
+	$("#simulationInstructions").html("");
+	$("#simulationRegisters").html("");
+	$("#simulationMemory").html("");
 
 	displayInstructions(currentStep + 1);
 	displayRegisters(currentStep + 1);
 	displayMemory(currentStep + 1);
 
+	currentStep++;
+
+	console.log(currentStep);
 }
 
+//
+//
+//
 function previousStep() {
+
+	$("#simulationInstructions").html("");
+	$("#simulationRegisters").html("");
+	$("#simulationMemory").html("");
 
 	displayInstructions(currentStep - 1);
 	displayRegisters(currentStep - 1);
 	displayMemory(currentStep - 1);
 
+	currentStep--;
+
 }
 
+//
+//
+//
 function executeAll() {
 
 	simulate();
@@ -56,8 +81,13 @@ function executeAll() {
 		scrollTop: $("#simulationResultsContainer").offset().top - 20
 	}, 500);
 
+	console.log(cycleData);
+
 }
 
+//
+//
+//
 function displayInstructions(currentInstruction) {
 
 	for(var i = 0; i < instructions.length; i++) {
@@ -71,6 +101,9 @@ function displayInstructions(currentInstruction) {
 
 }
 
+//
+//
+//
 function displayRegisters(currentRegisterState) {
 
 	for(var key in registerStates[currentRegisterState]) {
@@ -80,6 +113,9 @@ function displayRegisters(currentRegisterState) {
 	}
 }
 
+//
+//
+//
 function displayMemory(currentMemoryState) {
 
 	for(var key in memoryStates[currentMemoryState]) {
@@ -90,6 +126,9 @@ function displayMemory(currentMemoryState) {
 
 }
 
+//
+//
+//
 function displayCycleData(currentCycleData) {
 
 	$("#clockCycleTitle").attr("colspan", cycleData.length);
@@ -97,13 +136,16 @@ function displayCycleData(currentCycleData) {
 	for(var i = 1; i <= cycleCount; i++) {
 		$("#simulationCycleNumber").append("<td>" + i + "</td>");
 	}
-console.log(cycleData);
+
 	for(var i = 0; i < cycleData.length; i++) {
 		$("#simulationCycleData").append(cycleData[i]);
 	}
 
 }
 
+//
+//
+//
 function simulate() {
 
 	registerStates.push(Object.assign({}, registers));
@@ -114,7 +156,7 @@ function simulate() {
 	while(pcCounter < instructions.length) {
 
 		cycleData.push("<tr>");
-		if(cycleCount != 0) {
+		if(cycleCount != 1) {
 			cycleData.push("<td colspan=" + cycleCount + "></td>");
 		}
 
@@ -141,6 +183,9 @@ function simulate() {
 
 }
 
+//
+//
+//
 function instructionFetch() {
 
 	cycleData.push("<td>I" + (pcCounter + 1) + " - IF</td>");
@@ -149,6 +194,9 @@ function instructionFetch() {
 	return instructions[pcCounter];
 }
 
+//
+//
+//
 function decodeAndExecute(instructionBinary) {
 
 	var opcode = "";
@@ -202,6 +250,9 @@ function decodeAndExecute(instructionBinary) {
 	return executionResult;
 }
 
+//
+//
+//
 function writeMemory(executionResult) {
 
 	if(executionResult.memoryState) {
@@ -217,6 +268,9 @@ function writeMemory(executionResult) {
 
 }
 
+//
+//
+//
 function writeBack(executionResult) {
 
 	if(executionResult.registerState) {
