@@ -19,15 +19,23 @@ var previousExecutionResult;
 //	None
 function stepThrough() {
 
-	decodedCode.push("END");
+	if(decodedCode[decodedCode.length - 1] != "END") {
+		decodedCode.push("END");
+	}
+
+	simulationReset();
 	simulate();
 
 	$("#simulationResultsContainer").show();
 	displayInstructions(0);
 	displayRegisters(0);
 	displayMemory(0);
+	displayCycleData(0);
+
+	setDownloadLink();
 
 	$("#prevStepBtn").attr("disabled", "disabled");
+	$("#nextStepBtn").removeAttr("disabled");
 
 	$('html, body').animate({
 		scrollTop: $("#simulationResultsContainer").offset().top - 20
@@ -95,7 +103,11 @@ function previousStep() {
 //	None
 function executeAll() {
 
-	decodedCode.push("END");
+	if(decodedCode[decodedCode.length - 1] != "END") {
+		decodedCode.push("END");
+	}
+
+	simulationReset();
 	currentStep = decodedCode.length - 1;
 
 	simulate();
@@ -106,7 +118,10 @@ function executeAll() {
 	displayMemory(memoryStates.length - 1);
 	displayCycleData(cycleData.length);
 
+	setDownloadLink();
+
 	$("#nextStepBtn").attr("disabled", "disabled");
+	$("#prevStepBtn").removeAttr("disabled");
 
 	$('html, body').animate({
 		scrollTop: $("#simulationResultsContainer").offset().top - 20
@@ -264,7 +279,7 @@ function simulate() {
 function instructionFetch() {
 
 	cycleData.push([]);
-	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - IF";
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + "-IF";
 	cycleCounter++;
 
 	return instructions[pcCounter];
@@ -296,12 +311,12 @@ function decodeAndExecute(instructionBinary) {
 		}
 	}
 
-	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - ID";
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + "-ID";
 	cycleCounter++;
 
 	var executionResult = findInstruction(instructionBinary, ACTIONS.EXECUTE);
 
-	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - EX";
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + "-EX";
 	cycleCounter++;
 
 	return executionResult;
@@ -332,7 +347,7 @@ function writeMemory(executionResult) {
 		memoryStates.push(Object.assign({}, memoryStates[memoryStates.length - 1]));
 	}
 
-	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - MEM";
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + "-MEM";
 	cycleCounter++;
 
 }
@@ -361,7 +376,7 @@ function writeBack(executionResult) {
 		registerStates.push(Object.assign({}, registerStates[registerStates.length - 1]));
 	}
 
-	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - WB";
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + "-WB";
 	cycleCounter++;
 
 }
@@ -375,9 +390,38 @@ function writeBack(executionResult) {
 function stall(numberOfStalls) {
 
 	for(var i = 0; i < numberOfStalls; i++) {
-		cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - Stall";
+		cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + "-Stall";
 		cycleCounter++;
 	}
+
+}
+
+// Reset simulation variables when switching between
+// execute all and step through.
+// Params:
+//	None
+// Return:
+//	None
+function simulationReset() {
+
+	if(registerStates.length != 0) {
+		registers = registerStates[0];
+	}
+
+	if(memoryStates.length != 0) {
+		memory = memoryStates[0];
+	}
+
+	registerStates = [];
+	memoryStates = [];
+	cycleData = [];
+
+	currentStep = 0;
+
+	pcCounter = 0;
+	cycleCounter = 1;
+
+	previousExecutionResult = null;
 
 }
 
@@ -386,6 +430,44 @@ function stall(numberOfStalls) {
 //	None
 // Return:
 //	None
-function download() {
+function setDownloadLink() {
+
+	var downloadString = "";
+
+	for(var i = 1; i < cycleCounter; i++) {
+		downloadString += "c#" + i;
+
+		for(var j = 0; j < cycleData.length; j++) {
+
+			if(cycleData[j][i]) {
+				downloadString += " " + cycleData[j][i];
+			}
+
+		}
+
+		downloadString += "\n";
+	}
+
+	downloadString += "REGISTERS\n";
+
+	for(var key in registerStates[registerStates.length - 1]) {
+		if(registerStates[registerStates.length - 1][key] != 0) {
+			downloadString += "R" + key + " " + registerStates[registerStates.length - 1][key] + "\n";
+		}
+	}
+
+	downloadString += "MEMORY\n";
+
+	for(var key in memoryStates[memoryStates.length - 1]) {
+		if(memoryStates[memoryStates.length - 1][key] != 0) {
+			downloadString += "" + key + " " + memoryStates[memoryStates.length - 1][key] + "\n";
+		}
+	}
+
+	var base64EncodedString = btoa(downloadString);
+
+	var downloadLink = "data:application/octet-stream;charset=utf-8;base64," + base64EncodedString;
+
+	$("#downloadLink").attr("href", downloadLink);
 
 }
