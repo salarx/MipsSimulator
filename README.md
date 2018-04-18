@@ -1,4 +1,4 @@
-# MIPS Simulator
+# MIPS Simulator ![alt text](https://raw.githubusercontent.com/hunterhedges/mipsSimulator/master/images/favicon.ico "MIPS Simulator!")
 A simple MIPS pipeline CPU simulator demonstrating the effects of different instructions
 on clock cycles, registers, and memory. Step through to view effects closer or execute all instructions
 to see the final results. 
