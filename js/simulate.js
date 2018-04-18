@@ -1,27 +1,30 @@
-
-var instructions;
-var registerStates;
-var memoryStates;
-var cycleData;
+var instructions = [];
+var registerStates = []; // only updated on write back
+var memoryStates = []; // only updated on write memory
+var pcCounterStates = []; // used to track order of instructions when branching
+var cycleData = [];
 
 var currentStep = 0;
 
 var pcCounter = 0;
 var cycleCount = 1;
 
-const EXECUTE = "execute";
+
 
 //
 //
 //
 function stepThrough() {
 
+	decodedCode.push("END");
 	simulate();
 
 	$("#simulationResultsContainer").show();
 	displayInstructions(0);
 	displayRegisters(0);
 	displayMemory(0);
+
+	$("#prevStepBtn").attr("disabled", "disabled");
 
 	$('html, body').animate({
 		scrollTop: $("#simulationResultsContainer").offset().top - 20
@@ -34,17 +37,21 @@ function stepThrough() {
 //
 function nextStep() {
 
-	$("#simulationInstructions").html("");
-	$("#simulationRegisters").html("");
-	$("#simulationMemory").html("");
-
 	displayInstructions(currentStep + 1);
 	displayRegisters(currentStep + 1);
 	displayMemory(currentStep + 1);
 
 	currentStep++;
 
-	console.log(currentStep);
+	if(currentStep == decodedCode.length - 1) {
+		$("#nextStepBtn").attr("disabled", "disabled");
+	}
+
+	if(currentStep != 0) {
+		$("#prevStepBtn").removeAttr("disabled");
+	}
+
+
 }
 
 //
@@ -52,15 +59,20 @@ function nextStep() {
 //
 function previousStep() {
 
-	$("#simulationInstructions").html("");
-	$("#simulationRegisters").html("");
-	$("#simulationMemory").html("");
-
 	displayInstructions(currentStep - 1);
 	displayRegisters(currentStep - 1);
 	displayMemory(currentStep - 1);
 
 	currentStep--;
+
+	if(currentStep == 0) {
+		$("#prevStepBtn").attr("disabled", "disabled");
+	}
+
+	if(currentStep != decodedCode.length - 1) {
+		$("#nextStepBtn").removeAttr("disabled");
+	}
+
 
 }
 
@@ -69,19 +81,18 @@ function previousStep() {
 //
 function executeAll() {
 
+	decodedCode.push("END");
 	simulate();
 
 	$("#simulationResultsContainer").show();
 	displayInstructions(instructions.length - 1);
 	displayRegisters(registerStates.length - 1);
 	displayMemory(memoryStates.length - 1);
-	displayCycleData();
+//	displayCycleData();
 
 	$('html, body').animate({
 		scrollTop: $("#simulationResultsContainer").offset().top - 20
 	}, 500);
-
-	console.log(cycleData);
 
 }
 
@@ -90,7 +101,9 @@ function executeAll() {
 //
 function displayInstructions(currentInstruction) {
 
-	for(var i = 0; i < instructions.length; i++) {
+$("#simulationInstructions").html("");
+
+	for(var i = 0; i < decodedCode.length; i++) {
 		if(i == currentInstruction) {
 			$("#simulationInstructions").append("<tr><td>&rarr;</td><td>" + decodedCode[i] + "</td></tr>");
 		}
@@ -106,6 +119,8 @@ function displayInstructions(currentInstruction) {
 //
 function displayRegisters(currentRegisterState) {
 
+$("#simulationRegisters").html("");
+
 	for(var key in registerStates[currentRegisterState]) {
 		if(registerStates[currentRegisterState][key]) {
 			$("#simulationRegisters").append("<tr><td>R" + key + "</td><td>" + registerStates[currentRegisterState][key] + "</td></tr>");
@@ -117,7 +132,7 @@ function displayRegisters(currentRegisterState) {
 //
 //
 function displayMemory(currentMemoryState) {
-
+$("#simulationMemory").html("");
 	for(var key in memoryStates[currentMemoryState]) {
 		if(memoryStates[currentMemoryState][key]){
 			$("#simulationMemory").append("<tr><td>" + key + "</td><td>" + memoryStates[currentMemoryState][key] + "</td></tr>");
@@ -151,14 +166,7 @@ function simulate() {
 	registerStates.push(Object.assign({}, registers));
 	memoryStates.push(Object.assign({}, memory));
 
-	var isFinished = false;
-
 	while(pcCounter < instructions.length) {
-
-		cycleData.push("<tr>");
-		if(cycleCount != 1) {
-			cycleData.push("<td colspan=" + cycleCount + "></td>");
-		}
 
 		var instruction = instructionFetch();
 
@@ -168,15 +176,10 @@ function simulate() {
 			pcCounter += executionResult.branchOffset;
 		}
 
-		if(executionResult.type == "LW" || executionResult.type == "SW") {
-			writeMemory(executionResult);
-		}
+		writeMemory(executionResult);
 
-		if(executionResult.type == "LW" || executionResult.type == "R") {
-			writeBack(executionResult);
-		}
+		writeBack(executionResult);
 
-		cycleData.push("</tr>");
 		pcCounter++;
 
 	}
@@ -188,10 +191,11 @@ function simulate() {
 //
 function instructionFetch() {
 
-	cycleData.push("<td>I" + (pcCounter + 1) + " - IF</td>");
+	cycleData.push("I" + (pcCounter + 1) + " - IF");
 	cycleCount++;
 
 	return instructions[pcCounter];
+
 }
 
 //
@@ -203,51 +207,16 @@ function decodeAndExecute(instructionBinary) {
 	var funct = "";
 	var executionResult;
 
-	cycleData.push("<td>I" + (pcCounter + 1) + " - ID</td>");
+	cycleData.push("I" + (pcCounter + 1) + " - ID");
 	cycleCount++;
 
-	for(var j = 0; j < 6; j++) {
-		opcode += instructionBinary.charAt(j);
-	}
+	executionResult = findInstruction(instructionBinary, ACTIONS.EXECUTE);
 
-	switch(opcode) {
-		case "000000":
-		for(var j = instructionBinary.length - 6; j < instructionBinary.length; j++) {
-			funct += instructionBinary.charAt(j);
-		}
-		if(funct == "100000") {
-			executionResult = add(instructionBinary, EXECUTE);
-		}
-		else if(funct == "100010") {
-			executionResult = sub(instructionBinary, EXECUTE);
-		}
-		else if(funct == "101010") {
-			executionResult = setOnLessThan(instructionBinary, EXECUTE);
-		}
-		break;
-		case "001000":
-		executionResult = addi(instructionBinary, EXECUTE);
-		break;
-		case "000100":
-		executionResult = branchOnEqual(instructionBinary, EXECUTE);
-		break;
-		case "000101":
-		executionResult = branchNotEqual(instructionBinary, EXECUTE);
-		break;
-		case "100011":
-		executionResult = loadWord(instructionBinary, EXECUTE);
-		break;
-		case "101011":
-		executionResult = storeWord(instructionBinary, EXECUTE);
-		break;
-		default:
-		break;
-	}
-
-	cycleData.push("<td>I" + (pcCounter + 1) + " - EX</td>");
+	cycleData.push("I" + (pcCounter + 1) + " - EX");
 	cycleCount++;
 
 	return executionResult;
+
 }
 
 //
@@ -261,10 +230,15 @@ function writeMemory(executionResult) {
 		var value = executionResult.memoryState.value;
 		newMemoryState[memoryLocation] = value;
 		memoryStates.push(newMemoryState);
-	}
 
-	cycleData.push("<td>I" + (pcCounter + 1) + " - MEM</td>");
-	cycleCount++;
+		memory[memoryLocation] = value;
+
+		cycleData.push("I" + (pcCounter + 1) + " - MEM");
+		cycleCount++;
+	}
+	else {
+		memoryStates.push(Object.assign({}, memory));
+	}
 
 }
 
@@ -281,9 +255,16 @@ function writeBack(executionResult) {
 		registerStates.push(newRegisterState);
 
 		registers[register] = value;
+
+		cycleData.push("I" + (pcCounter + 1) + " - WB");
+		cycleCount++;
+	}
+	else {
+		registerStates.push(Object.assign({}, registers));
 	}
 
-	cycleData.push("<td>I" + (pcCounter + 1) + " - WB</td>");
-	cycleCount++;
+}
+
+function toggleView() {
 
 }

@@ -1,28 +1,26 @@
-
-var registers;
-var memory;
-var decodedCode;
-var warnings;
-
-const DECODE = "decode";
-
-var sections = {
-  registers: {
+const SECTIONS = {
+  REGISTERS: {
     sectionName: "registers",
     stopCharacters: ["m", "c"]
   },
-  memory: {
+  MEMORY: {
     sectionName: "memory",
     stopCharacters: ["r", "c"]
   },
-  code: {
+  CODE: {
     sectionName: "code",
     stopCharacters: ["r", "m"]
   }
 };
 
+var registers = {};
+var memory = {};
+var decodedCode = [];
+var warnings = [];
+
 // Add event listeners for drag and drop and file upload input
 // If browser cannot support drag and drop, hide drag and drop text
+// Runs once document is loaded.
 $(function() {
 
   if(!canDoDragAndDrop) {
@@ -42,9 +40,9 @@ $(function() {
     $("#uploadContainer").removeClass("file-hover")
   });
 
-  $("#uploadContainer").on("drop", handleFileOnUpload);
+  $("#uploadContainer").on("drop", readFileOnUpload);
 
-  $("input[type='file']").change(handleFileOnUpload);
+  $("input[type='file']").change(readFileOnUpload);
 
   $("#uploadLink").on("click", function(event){
     event.preventDefault();
@@ -53,30 +51,42 @@ $(function() {
 
 });
 
-// Return bool whether browser can support drag and drop
+// Determine if browser can handle dragging and dropping files.
+// Params:
+//  None
+// Return:
+//  Bool whether browser can handle drag and drop
 function canDoDragAndDrop() {
 
   var div = document.createElement('div');
 
   return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) &&
   'FormData' in window && 'FileReader' in window;
+
 }
 
-// Load sample input file from sampleInputs folder and run program
-function loadDemoFile() {
+// Read demo text file from Github and parse.
+// Params:
+//  None
+// Return:
+//  None
+function readDemoFile() {
 
-  $.get("https://raw.githubusercontent.com/hunterhedges/mipsSimulator/master/sampleinputs/sample_1.txt", function( data ) {
+  const DEMO_FILE_LINK = "https://raw.githubusercontent.com/hunterhedges/mipsSimulator/master/sampleinputs/sample_1.txt";
 
-    main(data);
-
+  $.get(DEMO_FILE_LINK, function(data) {
+    parseInputFile(data);
   });
 
 }
 
-// Handler function for file upload or file drop event
-// Checks that uploaded file is text file and not empty
-// If file is correct format, load registers, memory and code for display
-function handleFileOnUpload(event) {
+// Read text file from upload, check validity of file, and parse.
+// Display warning on empty text file or incorrect file type.
+// Params:
+//  Event from drag and drop or file upload link
+// Return:
+//  None
+function readFileOnUpload(event) {
 
   var droppedFile;
 
@@ -97,7 +107,7 @@ function handleFileOnUpload(event) {
         showModal("Error Uploading File", "File is empty");
       }
       else {
-        main(fileContent);
+        parseInputFile(fileContent);
       }
     };
 
@@ -112,30 +122,30 @@ function handleFileOnUpload(event) {
 // Primary function to run program. Reset, load registers,
 // memory, and decoded instructions then display.
 // Params:
-//  fileContent: string of text from file
+//  String of text in uploaded file
 // Return:
 //  None
-function main(fileContent) {
-
-  fileContent = fileContent.toLowerCase();
+function parseInputFile(fileContent) {
 
   reset();
 
-  loadRegisters(parseSection(fileContent, sections.registers));
-  loadMemory(parseSection(fileContent, sections.memory));
-  loadDecodedCode(parseSection(fileContent, sections.code));
+  fileContent = fileContent.toLowerCase();
+
+  loadRegisters(parseSection(fileContent, SECTIONS.REGISTERS));
+  loadMemory(parseSection(fileContent, SECTIONS.MEMORY));
+  loadDecodedCode(parseSection(fileContent, SECTIONS.CODE));
 
   displayDecodedInstructions();
   displayWarnings();
 
 }
 
-// Parse section of text file
+// Parse section of text file.
 // Params:
-//  fileContent: string of text in uploaded file
-//  section: section to parse
+//  String of text in uploaded file
+//  Section to parse
 // Return:
-//  array with split lines of section
+//  Array of strings from section split by lines or null if section does not exist
 function parseSection(fileContent, section) {
 
   var sectionString = "";
@@ -159,13 +169,15 @@ function parseSection(fileContent, section) {
   }
 
   return sectionArray;
+
 }
 
-// Fill registers object with register number and value
+// Separate lines of register section into register number and value,
+// then set the values in registers.
 // Params:
-//  registerArray: parsed array from register section
+//  Array of strings from register section
 // Return:
-//  none
+//  None
 function loadRegisters(registerArray) {
 
   if(!registerArray) {
@@ -173,7 +185,6 @@ function loadRegisters(registerArray) {
   }
 
   for(var i = 0; i < registerArray.length; i++) {
-
     var j = 0;
     var registerNumber = "";
     var registerValue = "";
@@ -183,21 +194,17 @@ function loadRegisters(registerArray) {
       j++;
     }
 
-    for(j = j; j < registerArray[i].length; j++) {
+    for(j = j + 1; j < registerArray[i].length; j++) {
       registerValue += registerArray[i].charAt(j);
     }
 
+    if(registerNumber.charAt(0) == "r") {
+      registerNumber = registerNumber.replace("r", "");
+    }
+
     if(isValidRegister(registerNumber)) {
-
-      if(registerNumber.charAt(0) == "r") {
-        registerNumber = registerNumber.replace("r", "");
-      }
-
       if(isValidValue(registerValue)) {
-
-        registerValue = registerValue.trim();
         registerValue = parseInt(registerValue);
-
         registers[registerNumber] = registerValue;
       }
     }
@@ -211,25 +218,19 @@ function loadRegisters(registerArray) {
 // only has registers valued between 0 and 31 inclusive.
 // Register 0 is always equal to 0.
 // Params:
-//  register: register string
+//  String relating to register
 // Return:
-//  bool: whether register is valid
+//  Bool whether register is valid
 function isValidRegister(register) {
 
   var registerNumber;
   var isValid = false;
 
-  if(register.includes("r")) {
-    registerNumber = parseInt(register.substring(1, register.length));
-  }
-  else {
-    registerNumber = parseInt(register);
-  }
+  registerNumber = parseInt(register);
 
-  if(registerNumber) {
+  if(registerNumber || registerNumber == 0) {
 
     if(registerNumber > 0 && registerNumber < 32) {
-
       isValid = true;
     }
     else {
@@ -241,13 +242,15 @@ function isValidRegister(register) {
   }
 
   return isValid;
+
 }
 
-// Fill memory object with memory location and value
+// Separate lines of memory section in memory location and value,
+// then set the values in memory.
 // Params:
-//  memoryArray: parsed array from memory section
+//  Array of strings from memory section
 // Return:
-//  none
+//  None
 function loadMemory(memoryArray) {
 
   if(!memoryArray) {
@@ -255,7 +258,6 @@ function loadMemory(memoryArray) {
   }
 
   for(var i = 0; i < memoryArray.length; i++) {
-
     var j = 0;
     var memoryLocation = "";
     var memoryValue = "";
@@ -265,21 +267,17 @@ function loadMemory(memoryArray) {
       j++;
     }
 
-    for(j = j; j < memoryArray[i].length; j++) {
+    for(j = j + 1; j < memoryArray[i].length; j++) {
       memoryValue += memoryArray[i].charAt(j);
     }
 
+    if(memoryLocation.charAt(0) == "m") {
+      memoryLocation = memoryLocation.replace("m", "");
+    }
+
     if(isValidMemoryLocation(memoryLocation)) {
-
-      if(memoryLocation.charAt(0) == "m") {
-        memoryLocation = memoryLocation.replace("m", "");
-      }
-
       if(isValidValue(memoryValue)) {
-
-        memoryValue = memoryValue.trim();
         memoryValue = parseInt(memoryValue);
-
         memory[memoryLocation] = memoryValue;
       }
     }
@@ -290,27 +288,21 @@ function loadMemory(memoryArray) {
 
 // Check that memory location is valid. Memory string must
 // start with 'm' followed by number or only number.
-// Memory location must be greater than 0 and divisble by 4.
+// Memory location must be greater than 0, less than 2^4 (65280),
+// and divisible by 4.
 // Params:
-//  memoryLocation: memory string
+//  String relating to memory location
 // Return:
-//  bool: whether memoryLocation is valid
+//  Bool whether memory location is valid
 function isValidMemoryLocation(memoryLocation) {
 
   var memoryNumber;
   var isValid = false;
 
-  if(memoryLocation.includes("m")) {
-    memoryNumber = parseInt(memoryLocation.substring(1, memoryLocation.length));
-  }
-  else {
-    memoryNumber = parseInt(memoryLocation);
-  }
+  memoryNumber = parseInt(memoryLocation);
 
   if(memoryNumber) {
-
     if(memoryNumber >= 0 && memoryNumber < 65280 && memoryNumber % 4 == 0) {
-
       isValid = true;
     }
     else {
@@ -322,13 +314,14 @@ function isValidMemoryLocation(memoryLocation) {
   }
 
   return isValid;
+
 }
 
-// Read the opcode and funct code if applicable to determine
+// Read the opcode and function code if applicable to determine
 // which MIPS instruction the code is. Push a decoded string
-// to decodedCode array.
+// to decodedCode array or push warning.
 // Params:
-//  codeArray: parsed array from code section
+//  Array of strings from code section
 // Return:
 //  None
 function loadDecodedCode(codeArray) {
@@ -338,61 +331,19 @@ function loadDecodedCode(codeArray) {
   }
 
   for(var i = 0; i < codeArray.length; i++) {
-
-    codeArray[i] = codeArray[i].trim();
     codeArray[i] = codeArray[i].replace(/ /g,"");
 
-    var opcode = "";
-    var funct = "";
-    var isValid = true;
+    var result = findInstruction(codeArray[i], ACTIONS.DECODE);
 
-    for(var j = 0; j < 6; j++) {
-      opcode += codeArray[i].charAt(j);
-    }
-
-    switch(opcode) {
-      case "000000":
-      for(var j = codeArray[i].length - 6; j < codeArray[i].length; j++) {
-        funct += codeArray[i].charAt(j);
-      }
-
-      if(funct == "100000") {
-        decodedCode.push(add(codeArray[i], DECODE));
-      }
-      else if(funct == "100010") {
-        decodedCode.push(sub(codeArray[i], DECODE));
-      }
-      else if(funct == "101010") {
-        decodedCode.push(setOnLessThan(codeArray[i], DECODE));
-      }
-      else {
-        warnings.push("Code <strong>" + codeArray[i] + "</strong> has an invalid funct code.");
-        isValid = false;
-      }
-      break;
-      case "001000":
-      decodedCode.push(addi(codeArray[i], DECODE));
-      break;
-      case "000100":
-      decodedCode.push(branchOnEqual(codeArray[i], DECODE));
-      break;
-      case "000101":
-      decodedCode.push(branchNotEqual(codeArray[i], DECODE));
-      break;
-      case "100011":
-      decodedCode.push(loadWord(codeArray[i], DECODE));
-      break;
-      case "101011":
-      decodedCode.push(storeWord(codeArray[i], DECODE));
-      break;
-      default:
-      warnings.push("Code <strong>" + codeArray[i] + "</strong> has an invalid opcode.");
-      isValid = false;
-      break;
-    }
-    if(isValid) {
+    if(result) {
+      decodedCode.push(result);
+      // Instructions used in simulation 
       instructions.push(codeArray[i]);
     }
+    else {
+      warnings.push("Code <strong>" + codeArray[i] + "</strong> is not a valid instruction.");
+    }
+
   }
 
 }
@@ -401,9 +352,9 @@ function loadDecodedCode(codeArray) {
 // For unsigned numbers, values must be between 0 and 4294967295.
 // For signed numbers, values must be between -2147483648 and -2147483647.
 // Params:
-//  value: number to check for overflow
+//  Integer to check
 // Return:
-//  bool: whether value is number and won't cause overflow
+//  Bool whether value is integer and won't cause overflow
 function isValidValue(value) {
 
   var isValid = false;
@@ -425,11 +376,15 @@ function isValidValue(value) {
   }
 
   return isValid;
+
 }
 
-// Show instructions container
-// Add registers, memory, and decoded code to container
-// Smooth scroll to container
+// Show instructions container, then add registers, memory,
+// and decoded code to container. Smooth scroll to container.
+// Params:
+//  None
+// Return:
+//  None
 function displayDecodedInstructions() {
 
   $("#decodedInstructionsContainer").show();
@@ -471,7 +426,11 @@ function displayDecodedInstructions() {
 
 }
 
-// Display warnings in modal to user
+// Display warnings to user in modal.
+// Params:
+//  None
+// Return:
+//  None
 function displayWarnings() {
 
   if(warnings.length != 0) {
@@ -487,10 +446,10 @@ function displayWarnings() {
 
 }
 
-// Display modal to user
+// Display modal to user.
 // Params:
-//  modalTitle: string title of modal
-//  modalBody: string of content for modal body
+//  String for title of modal
+//  String for content of modal body
 // Return:
 //  None
 function showModal(modalTitle, modalBody) {
@@ -501,9 +460,12 @@ function showModal(modalTitle, modalBody) {
 
 }
 
-// Clear global variables
-// Clear html inside instruction and simulation sections
-// Hide instruction and simulation containers
+// Clear global variables, clear html in all containers, hide
+// all containers and scroll back to top of screen.
+// Params:
+//  None
+// Return:
+//  None
 function reset() {
 
   $("#decodedInstructionsContainer").hide();

@@ -47,7 +47,7 @@
       <div class="container text-center mx-auto">
         <div class="row">
           <div class="col-12 col-md-8 offset-md-2 upload-container" id="uploadContainer">
-            <a href="#" class="demo-link" onclick="loadDemoFile()">Use Demo File</a>
+            <a href="#" class="demo-link" onclick="readDemoFile()">No file? Try Demo!</a>
             <div class="justify-content-center align-self-center mx-auto">
               <img src="images/upload_icon.png" class="upload-icon" /> <br />
               <input class="file-input" type="file" id="file" /> <br />
@@ -158,13 +158,13 @@
         </div>
         <div class="row text-center p-md-3">
           <div class="col-12 col-md-4 m-1 m-md-0">
-            <button class="btn btn-primary">Download Text File</button>
+            <button class="btn btn-primary" onclick="toggleView()" id="viewAsBtn">View as Text</button>
           </div>
           <div class="col-12 col-md-4 m-1 m-md-0">
-            <button class="btn btn-primary" onclick="previousStep()">Previous Step</button>
+            <button class="btn btn-primary" onclick="previousStep()" id="prevStepBtn">Previous Step</button>
           </div>
           <div class="col-12 col-md-4 m-1 m-md-0">
-            <button class="btn btn-primary" onclick="nextStep()">Next Step</button>
+            <button class="btn btn-primary" onclick="nextStep()" id="nextStepBtn">Next Step</button>
           </div>
         </div>
       </div>

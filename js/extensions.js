@@ -1,4 +1,3 @@
-
 // Remove empty elements from array
 // Params:
 //  None
@@ -24,4 +23,20 @@ Array.prototype.removeEmptyElements = function removeEmptyElements() {
 //  bool: whether string is null or empty
 String.prototype.isNullOrEmpty = function isNullOrEmpty() {
   return (!this || /^\s*$/.test(this));
+}
+
+// Convert unsigned decimal to signed
+// Params:
+//	uint: unsigned decimal
+//	nbit: number base
+// Return:
+//	signed decimal
+function uintToInt(uint, nbit) {
+
+	nbit = +nbit || 32;
+
+	uint <<= 32 - nbit;
+	uint >>= 32 - nbit;
+
+	return uint;
 }

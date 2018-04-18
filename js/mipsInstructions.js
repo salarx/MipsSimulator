@@ -1,126 +1,15 @@
+const ACTIONS = {
+	DECODE: "decode",
+	EXECUTE: "execute"
+}
 
-// Read rs section of binary MIPS instruction which
-// is indices between 6 and 11.
+// ExecutionResult object returned by MIPS instruction on execute action.
 // Params:
-//	string of MIPS 32 bit binary instruction
-// Return:
-//	decimal value of rs
-function parseRs(codeString) {
-
-	var rs = "";
-
-	for(var i = 6; i < 11; i++) {
-		rs += codeString.charAt(i);
-	}
-
-	return parseInt(rs, 2);
-}
-
-// Read rt section of binary MIPS instruction which
-// is indices between 11 and 16.
-// Params:
-//	string of MIPS 32 bit binary instruction
-// Return:
-//	decimal value of rt
-function parseRt(codeString) {
-
-	var rt = "";
-
-	for(var i = 11; i < 16; i++) {
-		rt += codeString.charAt(i);
-	}
-
-	return parseInt(rt, 2);
-}
-
-// Read rd section of binary MIPS instruction which
-// is indices between 16 and 21.
-// Params:
-//	string of MIPS 32 bit binary instruction
-// Return:
-//	decimal value of rd
-function parseRd(codeString) {
-
-	var rd = "";
-
-	for(var i = 16; i < 21; i++) {
-		rd += codeString.charAt(i);
-	}
-
-	return parseInt(rd, 2);
-}
-
-// Read offset section of binary MIPS instruction which
-// is indices between 16 and 32.
-// Params:
-//	string of MIPS 32 bit binary instruction
-// Return:
-//	decimal value of offset
-function parseOffset(codeString) {
-
-	var offset = "";
-
-	for(var i = 16; i < codeString.length; i++) {
-		offset += codeString.charAt(i);
-	}
-
-	return parseInt(offset, 2);
-}
-
-// Read immediate section of binary MIPS instruction which
-// is indices between 16 and 32. Check whether the value is
-// negative and convert appropriately.
-// Params:
-//	string of MIPS 32 bit binary instruction
-// Return:
-//	decimal value of immediate
-function parseImm(codeString) {
-
-	var imm = "";
-
-	for(var i = 16; i < codeString.length; i++) {
-		imm += codeString.charAt(i);
-	}
-
-	// Check immediate is negative
-	imm = parseInt(imm, 2);
-	imm = uintToInt(imm, 10);
-
-	return imm;
-}
-
-function setRegisterDefault(registerNumber) {
-
-	if(!registers[registerNumber]) {
-		registers[registerNumber] = 0;
-	}
-
-}
-
-function setMemoryDefault(memoryLocation) {
-
-	if(!memory[memoryLocation]) {
-		memory[memoryLocation] = 0;
-	}
-
-}
-
-// Convert unsigned decimal to signed
-// Params:
-//	uint: unsigned decimal
-//	nbit: number base
-// Return:
-//	signed decimal
-function uintToInt(uint, nbit) {
-
-	nbit = +nbit || 32;
-
-	uint <<= 32 - nbit;
-	uint >>= 32 - nbit;
-
-	return uint;
-}
-
+//	String for type of instruction executed
+//	Register number and value object affected if applicable
+//	Memory location and value object affected if applicable
+//	Bool if the instruction causes a branch
+//	Integer of branch offset if shouldBranch = true
 function ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset) {
 
 	this.type = type;
@@ -131,23 +20,185 @@ function ExecutionResult(type, registerState, memoryState, shouldBranch, branchO
 
 }
 
+// Decodes binary instruction and runs corresponding function
+// with specific action.
+// Params:
+//	String of 32-bit binary instruction
+//	Action specifying what to do with instruction
+// Return:
+//	Result of calling the instruction with action
+function findInstruction(binaryInstructionString, action) {
+
+	var opcode = "";
+	var funct = "";
+	var result;
+
+	for(var i = 0; i < 6; i++) {
+		opcode += binaryInstructionString.charAt(i);
+	}
+
+	switch(opcode) {
+		// For opcodes with 000000, we need to read funct
+		case "000000":
+		for(var i = binaryInstructionString.length - 6; i < binaryInstructionString.length; i++) {
+			funct += binaryInstructionString.charAt(i);
+		}
+		if(funct == "100000") {
+			result = add(binaryInstructionString, action);
+		}
+		else if(funct == "100010") {
+			result = sub(binaryInstructionString, action);
+		}
+		else if(funct == "101010") {
+			result = setOnLessThan(binaryInstructionString, action);
+		}
+		break;
+		case "001000":
+		result = addi(binaryInstructionString, action);
+		break;
+		case "000100":
+		result = branchOnEqual(binaryInstructionString, action);
+		break;
+		case "000101":
+		result = branchNotEqual(binaryInstructionString, action);
+		break;
+		case "100011":
+		result = loadWord(binaryInstructionString, action);
+		break;
+		case "101011":
+		result = storeWord(binaryInstructionString, action);
+		break;
+		default:
+		break;
+	}
+
+	return result;
+
+}
+
+// Read rs section of binary MIPS instruction which
+// is indices between 6 and 11.
+// Params:
+//	String of 32-bit binary instruction
+// Return:
+//	Integer value of rs
+function parseRs(binaryInstructionString) {
+
+	var rs = binaryInstructionString.substring(6, 11);
+
+	return parseInt(rs, 2);
+
+}
+
+// Read rt section of binary MIPS instruction which
+// is indices between 11 and 16.
+// Params:
+//	String of 32-bit binary instruction
+// Return:
+//	Integer value of rt
+function parseRt(binaryInstructionString) {
+
+	var rt = binaryInstructionString.substring(11, 16);
+
+	return parseInt(rt, 2);
+
+}
+
+// Read rd section of binary MIPS instruction which
+// is indices between 16 and 21.
+// Params:
+//	String of 32-bit binary instruction
+// Return:
+//	Integer value of rd
+function parseRd(binaryInstructionString) {
+
+	var rd = binaryInstructionString.substring(16, 21);
+
+	return parseInt(rd, 2);
+
+}
+
+// Read offset section of binary MIPS instruction which
+// is indices between 16 and 32.
+// Params:
+//	String of 32-bit binary instruction
+// Return:
+//	Integer value of offset
+function parseOffset(binaryInstructionString) {
+
+	var offset = binaryInstructionString.substring(16);
+
+	return parseInt(offset, 2);
+
+}
+
+// Read immediate section of binary MIPS instruction which
+// is indices between 16 and 32. Check whether the value is
+// negative and convert appropriately.
+// Params:
+//	String of 32-bit binary instruction
+// Return:
+//	Integer value of immediate
+function parseImm(binaryInstructionString) {
+
+	var imm = binaryInstructionString.substring(16);
+
+	// Check immediate is negative
+	imm = parseInt(imm, 2);
+	imm = uintToInt(imm, 10);
+
+	return imm;
+
+}
+
+// If register doesn't exist but used in calculation, create it
+// and set it to 0. Check for validity not needed.
+// Params:
+//	Integer of register to check
+// Return:
+//	None
+function setRegisterDefault(registerNumber) {
+
+	if(!registers[registerNumber]) {
+		registers[registerNumber] = 0;
+	}
+
+}
+
+// If memory location doesn't exist but used in calculation,
+// create it and set it to 0. Check for validity not needed.
+// Params:
+//	Integer of memory location to check
+// Return:
+//	None
+function setMemoryDefault(memoryLocation) {
+
+	if(!memory[memoryLocation]) {
+		memory[memoryLocation] = 0;
+	}
+
+}
+
 // MIPS INSTRUCTIONS
+// Params:
+//	String of 32-bit binary instruction
+//	Action specifying what to do with instruction
+// Return:
+//	Result based on action
 
 // add rd, rs, rt
 // rd = rs + rt
 // 0000 00ss ssst tttt dddd d000 0010 0000
-function add(instructionBinary, action) {
+function add(binaryInstructionString, action) {
 
-	var rs = parseRs(instructionBinary);
-	var rt = parseRt(instructionBinary);
-	var rd = parseRd(instructionBinary);
+	var rs = parseRs(binaryInstructionString);
+	var rt = parseRt(binaryInstructionString);
+	var rd = parseRd(binaryInstructionString);
 
-	var result;
-
-	if(action == "decode") {
+	if(action == ACTIONS.DECODE) {
 		return "ADD R" + rd + ", R" + rs + ", R" + rt;
 	}
-	else if(action == "execute") {
+	else if(action == ACTIONS.EXECUTE) {
 		var type = "R";
 
 		setRegisterDefault(rs);
@@ -166,17 +217,17 @@ function add(instructionBinary, action) {
 // addi rs, rt, imm
 // rt = rs + imm
 // 0010 00ss ssst tttt iiii iiii iiii iiii
-function addi(instructionBinary, action) {
+function addi(binaryInstructionString, action) {
 
-	var rs = parseRs(instructionBinary);
-	var rt = parseRt(instructionBinary);
-	var imm = parseImm(instructionBinary);
+	var rs = parseRs(binaryInstructionString);
+	var rt = parseRt(binaryInstructionString);
+	var imm = parseImm(binaryInstructionString);
 
-	if(action == "decode") {
+	if(action == ACTIONS.DECODE) {
 		return "ADDI R" + rt + ", R" + rs + ", " + imm;
 	}
-	else if(action == "execute") {
-		var type = "I";
+	else if(action == ACTIONS.EXECUTE) {
+		var type = "R";
 
 		setRegisterDefault(rs);
 
@@ -193,16 +244,16 @@ function addi(instructionBinary, action) {
 // beq rs, rt, offset
 // if(rs == rt) advance pc offset << 2
 // 0001 00ss ssst tttt iiii iiii iiii iiii
-function branchOnEqual(instructionBinary, action) {
+function branchOnEqual(binaryInstructionString, action) {
 
-	var rs = parseRs(instructionBinary);
-	var rt = parseRt(instructionBinary);
-	var offset = parseOffset(instructionBinary);
+	var rs = parseRs(binaryInstructionString);
+	var rt = parseRt(binaryInstructionString);
+	var offset = parseOffset(binaryInstructionString);
 
-	if(action == "decode") {
+	if(action == ACTIONS.DECODE) {
 		return "BEQ R" + rs + ", R" + rt + ", " + offset;
 	}
-	else if(action == "execute") {
+	else if(action == ACTIONS.EXECUTE) {
 		var type = "I";
 		var registerState = null;
 		var memoryState = null;
@@ -218,7 +269,6 @@ function branchOnEqual(instructionBinary, action) {
 		}
 
 		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
-
 	}
 
 }
@@ -226,16 +276,16 @@ function branchOnEqual(instructionBinary, action) {
 // bne rs, rt, offset
 // if(rs != rt) advance pc offset << 2
 // 0001 01ss ssst tttt iiii iiii iiii iiii
-function branchNotEqual(instructionBinary, action) {
+function branchNotEqual(binaryInstructionString, action) {
 
-	var rs = parseRs(instructionBinary);
-	var rt = parseRt(instructionBinary);
-	var offset = parseOffset(instructionBinary);
+	var rs = parseRs(binaryInstructionString);
+	var rt = parseRt(binaryInstructionString);
+	var offset = parseOffset(binaryInstructionString);
 
-	if(action == "decode") {
+	if(action == ACTIONS.DECODE) {
 		return "BNE R" + rs + ", R" + rt + ", " + offset;
 	}
-	else if(action == "execute") {
+	else if(action == ACTIONS.EXECUTE) {
 		var type = "I";
 		var registerState = null;
 		var memoryState = null;
@@ -258,16 +308,16 @@ function branchNotEqual(instructionBinary, action) {
 // lw rt, offset(rs)
 // rt = MEM[rs + offset]
 // 1000 11ss ssst tttt iiii iiii iiii iiii
-function loadWord(instructionBinary, action) {
+function loadWord(binaryInstructionString, action) {
 
-	var rs = parseRs(instructionBinary);
-	var rt = parseRt(instructionBinary);
-	var offset = parseOffset(instructionBinary);
+	var rs = parseRs(binaryInstructionString);
+	var rt = parseRt(binaryInstructionString);
+	var offset = parseOffset(binaryInstructionString);
 
-	if(action == "decode") {
+	if(action == ACTIONS.DECODE) {
 		return "LW R" + rt + ", " + offset + "(R" + rs + ")";
 	}
-	else if(action == "execute") {
+	else if(action == ACTIONS.EXECUTE) {
 		var type = "LW";
 
 		setRegisterDefault(rt);
@@ -288,16 +338,16 @@ function loadWord(instructionBinary, action) {
 // sw rt, offset(rs)
 // MEM[rs + offset] = rt
 // 1010 11ss ssst tttt iiii iiii iiii iiii
-function storeWord(instructionBinary, action) {
+function storeWord(binaryInstructionString, action) {
 
-	var rs = parseRs(instructionBinary);
-	var rt = parseRt(instructionBinary);
-	var offset = parseOffset(instructionBinary);
+	var rs = parseRs(binaryInstructionString);
+	var rt = parseRt(binaryInstructionString);
+	var offset = parseOffset(binaryInstructionString);
 
-	if(action == "decode") {
+	if(action == ACTIONS.DECODE) {
 		return "SW R" + rt + ", " + offset + "(R" + rs + ")";
 	}
-	else if(action == "execute") {
+	else if(action == ACTIONS.EXECUTE) {
 		var type = "SW";
 
 		setRegisterDefault(rt);
@@ -317,16 +367,16 @@ function storeWord(instructionBinary, action) {
 // slt rd, rs, rt
 // if(rs < rt) rd = 1, else rd = 0
 // 0000 00ss ssst tttt dddd d000 0010 1010
-function setOnLessThan(instructionBinary, action) {
+function setOnLessThan(binaryInstructionString, action) {
 
-	var rs = parseRs(instructionBinary);
-	var rt = parseRt(instructionBinary);
-	var rd = parseRd(instructionBinary);
+	var rs = parseRs(binaryInstructionString);
+	var rt = parseRt(binaryInstructionString);
+	var rd = parseRd(binaryInstructionString);
 
-	if(action == "decode") {
+	if(action == ACTIONS.DECODE) {
 		return "SLT R" + rd + ", R" + rs + ", R" + rt;
 	}
-	else if(action == "execute") {
+	else if(action == ACTIONS.EXECUTE) {
 		var type = "R";
 
 		setRegisterDefault(rs);
@@ -353,16 +403,16 @@ function setOnLessThan(instructionBinary, action) {
 // sub rd, rs, rt
 // rd = rs - rt
 // 0000 00ss ssst tttt dddd d000 0010 0010
-function sub(instructionBinary, action) {
+function sub(binaryInstructionString, action) {
 
-	var rs = parseRs(instructionBinary);
-	var rt = parseRt(instructionBinary);
-	var rd = parseRd(instructionBinary);
+	var rs = parseRs(binaryInstructionString);
+	var rt = parseRt(binaryInstructionString);
+	var rd = parseRd(binaryInstructionString);
 
-	if(action == "decode") {
+	if(action == ACTIONS.DECODE) {
 		return "SUB R" + rd + ", R" + rs + ", R" + rt;
 	}
-	else if(action == "execute") {
+	else if(action == ACTIONS.EXECUTE) {
 		var type = "R";
 
 		setRegisterDefault(rs);
