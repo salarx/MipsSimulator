@@ -29,6 +29,7 @@ function ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, 
 //	Result of calling the instruction with action
 function findInstruction(binaryInstructionString, action) {
 
+	binaryInstructionString = binaryInstructionString.trim();
 	var opcode = binaryInstructionString.substring(0, 6);
 	var result;
 

@@ -390,7 +390,7 @@ function writeBack(executionResult) {
 function stall(numberOfStalls) {
 
 	for(var i = 0; i < numberOfStalls; i++) {
-		cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + "-Stall";
+		cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + "-stall";
 		cycleCounter++;
 	}
 
