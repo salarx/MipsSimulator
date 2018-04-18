@@ -25,13 +25,6 @@ String.prototype.isNullOrEmpty = function isNullOrEmpty() {
   return (!this || /^\s*$/.test(this));
 }
 
-//
-//
-//
-String.prototype.encodeBase64 = function encodeBase64() {
-  return "HelloWorld!";
-}
-
 // Convert unsigned decimal to signed
 // Params:
 //	uint: unsigned decimal
