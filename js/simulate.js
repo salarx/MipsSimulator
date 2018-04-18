@@ -36,7 +36,7 @@ function stepThrough() {
 }
 
 // Display updated simulation results to the next step.
-// Disable next button if end is reached. Enable prev
+// Disable next button if end is reached. Enable previous
 // step button if beginning is left.
 // Params:
 //	None
@@ -62,7 +62,7 @@ function nextStep() {
 }
 
 // Display updated simulation results to the previous step.
-// Disable previous button if begnning is reached. Enable
+// Disable previous button if beginning is reached. Enable
 // next button if end is left.
 // Params:
 //	None
@@ -153,7 +153,7 @@ function displayRegisters(currentRegisterState) {
 
 }
 
-// Display all non-zero memory values from simluation
+// Display all non-zero memory values from simulation
 // results based on step in memory states.
 // Params:
 //	Integer of the current step in simulation
@@ -213,7 +213,7 @@ function displayCycleData(currentCycleData) {
 
 }
 
-// Load inital register and memory values into register states.
+// Load initial register and memory values into register states.
 // The pcCounter points to the instruction to be fetched.
 // If the previous execution result is null, then it was a branch
 // and is reason to skip the next x amount of instructions while still
@@ -260,7 +260,7 @@ function simulate() {
 // Params:
 //	None
 // Return:
-//	binaryInstructionString corresponding to pcCounter
+//	String of 32-bit binary instruction corresponding to pcCounter
 function instructionFetch() {
 
 	cycleData.push([]);
