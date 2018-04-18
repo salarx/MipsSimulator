@@ -29,20 +29,13 @@ function ExecutionResult(type, registerState, memoryState, shouldBranch, branchO
 //	Result of calling the instruction with action
 function findInstruction(binaryInstructionString, action) {
 
-	var opcode = "";
-	var funct = "";
+	var opcode = binaryInstructionString.substring(0, 6);
 	var result;
 
-	for(var i = 0; i < 6; i++) {
-		opcode += binaryInstructionString.charAt(i);
-	}
-
 	switch(opcode) {
-		// For opcodes with 000000, we need to read funct
+		// For opcodes with 000000, we need to read function code
 		case "000000":
-		for(var i = binaryInstructionString.length - 6; i < binaryInstructionString.length; i++) {
-			funct += binaryInstructionString.charAt(i);
-		}
+		var funct = binaryInstructionString.substring(26);
 		if(funct == "100000") {
 			result = add(binaryInstructionString, action);
 		}
