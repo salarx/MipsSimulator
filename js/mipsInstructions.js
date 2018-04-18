@@ -10,9 +10,10 @@ const ACTIONS = {
 //	Memory location and value object affected if applicable
 //	Bool if the instruction causes a branch
 //	Integer of branch offset if shouldBranch = true
-function ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset) {
+function ExecutionResult(type, stallAmount, registerState, memoryState, shouldBranch, branchOffset) {
 
 	this.type = type;
+	this.stallAmount = stallAmount;
 	this.registerState = registerState;
 	this.memoryState = memoryState;
 	this.shouldBranch = shouldBranch;
@@ -202,7 +203,7 @@ function add(binaryInstructionString, action) {
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -229,7 +230,7 @@ function addi(binaryInstructionString, action) {
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -261,7 +262,7 @@ function branchOnEqual(binaryInstructionString, action) {
 			branchOffset = offset;
 		}
 
-		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(type, 0, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -293,7 +294,7 @@ function branchNotEqual(binaryInstructionString, action) {
 			branchOffset = offset;
 		}
 
-		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(type, 0, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -322,7 +323,7 @@ function loadWord(binaryInstructionString, action) {
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
 
 	}
 
@@ -352,7 +353,7 @@ function storeWord(binaryInstructionString, action) {
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(type, 0, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -388,7 +389,7 @@ function setOnLessThan(binaryInstructionString, action) {
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -416,7 +417,7 @@ function sub(binaryInstructionString, action) {
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }

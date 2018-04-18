@@ -1,13 +1,14 @@
 var instructions = [];
 var registerStates = []; // only updated on write back
 var memoryStates = []; // only updated on write memory
-var pcCounterStates = []; // used to track order of instructions when branching
 var cycleData = [];
 
 var currentStep = 0;
 
 var pcCounter = 0;
-var cycleCount = 1;
+var cycleCounter = 1;
+
+var previousExecutionResult;
 
 
 
@@ -40,6 +41,7 @@ function nextStep() {
 	displayInstructions(currentStep + 1);
 	displayRegisters(currentStep + 1);
 	displayMemory(currentStep + 1);
+	displayCycleData(currentStep + 1);
 
 	currentStep++;
 
@@ -62,6 +64,7 @@ function previousStep() {
 	displayInstructions(currentStep - 1);
 	displayRegisters(currentStep - 1);
 	displayMemory(currentStep - 1);
+	displayCycleData(currentStep - 1);
 
 	currentStep--;
 
@@ -82,13 +85,15 @@ function previousStep() {
 function executeAll() {
 
 	decodedCode.push("END");
+	currentStep = decodedCode.length - 1;
+
 	simulate();
 
 	$("#simulationResultsContainer").show();
-	displayInstructions(instructions.length - 1);
+	displayInstructions(decodedCode.length - 1);
 	displayRegisters(registerStates.length - 1);
 	displayMemory(memoryStates.length - 1);
-//	displayCycleData();
+	displayCycleData(cycleData.length);
 
 	$('html, body').animate({
 		scrollTop: $("#simulationResultsContainer").offset().top - 20
@@ -101,7 +106,7 @@ function executeAll() {
 //
 function displayInstructions(currentInstruction) {
 
-$("#simulationInstructions").html("");
+	$("#simulationInstructions").html("");
 
 	for(var i = 0; i < decodedCode.length; i++) {
 		if(i == currentInstruction) {
@@ -119,7 +124,7 @@ $("#simulationInstructions").html("");
 //
 function displayRegisters(currentRegisterState) {
 
-$("#simulationRegisters").html("");
+	$("#simulationRegisters").html("");
 
 	for(var key in registerStates[currentRegisterState]) {
 		if(registerStates[currentRegisterState][key]) {
@@ -132,7 +137,7 @@ $("#simulationRegisters").html("");
 //
 //
 function displayMemory(currentMemoryState) {
-$("#simulationMemory").html("");
+	$("#simulationMemory").html("");
 	for(var key in memoryStates[currentMemoryState]) {
 		if(memoryStates[currentMemoryState][key]){
 			$("#simulationMemory").append("<tr><td>" + key + "</td><td>" + memoryStates[currentMemoryState][key] + "</td></tr>");
@@ -146,14 +151,36 @@ $("#simulationMemory").html("");
 //
 function displayCycleData(currentCycleData) {
 
-	$("#clockCycleTitle").attr("colspan", cycleData.length);
+	$("#simulationCycleNumber").html("");
+	$("#simulationCycleData").html("");
 
-	for(var i = 1; i <= cycleCount; i++) {
+	$("#clockCycleTitle").attr("colspan", cycleCounter);
+
+	for(var i = 1; i < cycleCounter; i++) {
 		$("#simulationCycleNumber").append("<td>" + i + "</td>");
 	}
 
-	for(var i = 0; i < cycleData.length; i++) {
-		$("#simulationCycleData").append(cycleData[i]);
+	for(var i = 0; i < currentCycleData; i++) {
+		var emptyCounter = 0;
+		$("#simulationCycleData").append("<tr>");
+		for(var j = 1; j < cycleCounter; j++) {
+
+			if(j < cycleData[i].length) {
+				if(cycleData[i][j]) {
+					$("#simulationCycleData").append("<td>" + cycleData[i][j] + "</td>");
+				}
+				else {
+					$("#simulationCycleData").append("<td></td>");
+				}
+			}
+			else {
+				$("#simulationCycleData").append("<td></td>");
+			}
+
+
+		}
+
+		$("#simulationCycleData").append("</tr>");
 	}
 
 }
@@ -172,17 +199,25 @@ function simulate() {
 
 		var executionResult = decodeAndExecute(instruction);
 
-		if(executionResult.shouldBranch) {
-			pcCounter += executionResult.branchOffset;
+		if(executionResult) {
+			previousExecutionResult = executionResult;
+
+			writeMemory(executionResult);
+
+			writeBack(executionResult);
+
+			pcCounter++;
+
+			cycleCounter = cycleCounter - 4;
+		}
+		else {
+			previousExecutionResult = null;
 		}
 
-		writeMemory(executionResult);
-
-		writeBack(executionResult);
-
-		pcCounter++;
 
 	}
+
+	cycleCounter += 4;
 
 }
 
@@ -191,8 +226,9 @@ function simulate() {
 //
 function instructionFetch() {
 
-	cycleData.push("I" + (pcCounter + 1) + " - IF");
-	cycleCount++;
+	cycleData.push([]);
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - IF";
+	cycleCounter++;
 
 	return instructions[pcCounter];
 
@@ -203,17 +239,27 @@ function instructionFetch() {
 //
 function decodeAndExecute(instructionBinary) {
 
-	var opcode = "";
-	var funct = "";
-	var executionResult;
+	if(previousExecutionResult) {
+		stall(previousExecutionResult.stallAmount);
 
-	cycleData.push("I" + (pcCounter + 1) + " - ID");
-	cycleCount++;
+		if(previousExecutionResult.shouldBranch) {
+			pcCounter += previousExecutionResult.branchOffset;
+			cycleCounter++;
 
-	executionResult = findInstruction(instructionBinary, ACTIONS.EXECUTE);
+			memoryStates.push(Object.assign({}, memoryStates[memoryStates.length - 1]));
+			registerStates.push(Object.assign({}, registerStates[registerStates.length - 1]));
 
-	cycleData.push("I" + (pcCounter + 1) + " - EX");
-	cycleCount++;
+			return;
+		}
+	}
+
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - ID";
+	cycleCounter++;
+
+	var executionResult = findInstruction(instructionBinary, ACTIONS.EXECUTE);
+
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - EX";
+	cycleCounter++;
 
 	return executionResult;
 
@@ -233,12 +279,13 @@ function writeMemory(executionResult) {
 
 		memory[memoryLocation] = value;
 
-		cycleData.push("I" + (pcCounter + 1) + " - MEM");
-		cycleCount++;
 	}
 	else {
-		memoryStates.push(Object.assign({}, memory));
+		memoryStates.push(Object.assign({}, memoryStates[memoryStates.length - 1]));
 	}
+
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - MEM";
+	cycleCounter++;
 
 }
 
@@ -256,11 +303,21 @@ function writeBack(executionResult) {
 
 		registers[register] = value;
 
-		cycleData.push("I" + (pcCounter + 1) + " - WB");
-		cycleCount++;
 	}
 	else {
-		registerStates.push(Object.assign({}, registers));
+		registerStates.push(Object.assign({}, registerStates[registerStates.length - 1]));
+	}
+
+	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - WB";
+	cycleCounter++;
+
+}
+
+function stall(numberOfStalls) {
+
+	for(var i = 0; i < numberOfStalls; i++) {
+		cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + " - Stall";
+		cycleCounter++;
 	}
 
 }

@@ -337,7 +337,7 @@ function loadDecodedCode(codeArray) {
 
     if(result) {
       decodedCode.push(result);
-      // Instructions used in simulation 
+      // Instructions used in simulation
       instructions.push(codeArray[i]);
     }
     else {
@@ -488,7 +488,7 @@ function reset() {
   cycleData = [];
 
   pcCounter = 0;
-  cycleCount = 1;
+  cycleCounter = 1;
 
   $('html, body').animate({
     scrollTop: 0 }, 500);
