@@ -10,9 +10,8 @@ const ACTIONS = {
 //	Memory location and value object affected if applicable
 //	Bool if the instruction causes a branch
 //	Integer of branch offset if shouldBranch = true
-function ExecutionResult(type, stallAmount, registerState, memoryState, shouldBranch, branchOffset) {
+function ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, branchOffset) {
 
-	this.type = type;
 	this.stallAmount = stallAmount;
 	this.registerState = registerState;
 	this.memoryState = memoryState;
@@ -193,17 +192,16 @@ function add(binaryInstructionString, action) {
 		return "ADD R" + rd + ", R" + rs + ", R" + rt;
 	}
 	else if(action == ACTIONS.EXECUTE) {
-		var type = "R";
-
 		setRegisterDefault(rs);
 		setRegisterDefault(rt);
 
+		var stallAmount = 2;
 		var registerState = { register: rd, value: registers[rs] + registers[rt] };
 		var memoryState = null;
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -221,16 +219,15 @@ function addi(binaryInstructionString, action) {
 		return "ADDI R" + rt + ", R" + rs + ", " + imm;
 	}
 	else if(action == ACTIONS.EXECUTE) {
-		var type = "R";
-
 		setRegisterDefault(rs);
 
+		var stallAmount = 2;
 		var registerState = { register: rt, value: registers[rs] + imm };
 		var memoryState = null;
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -248,21 +245,21 @@ function branchOnEqual(binaryInstructionString, action) {
 		return "BEQ R" + rs + ", R" + rt + ", " + offset;
 	}
 	else if(action == ACTIONS.EXECUTE) {
-		var type = "I";
+		setRegisterDefault(rs);
+		setRegisterDefault(rt);
+
+		var stallAmount = 0;
 		var registerState = null;
 		var memoryState = null;
 		var shouldBranch = false;
 		var branchOffset = 0;
-
-		setRegisterDefault(rs);
-		setRegisterDefault(rt);
 
 		if(registers[rs] == registers[rt]) {
 			shouldBranch = true;
 			branchOffset = offset;
 		}
 
-		return new ExecutionResult(type, 0, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -280,21 +277,21 @@ function branchNotEqual(binaryInstructionString, action) {
 		return "BNE R" + rs + ", R" + rt + ", " + offset;
 	}
 	else if(action == ACTIONS.EXECUTE) {
-		var type = "I";
+		setRegisterDefault(rs);
+		setRegisterDefault(rt);
+
+		var stallAmount = 0;
 		var registerState = null;
 		var memoryState = null;
 		var shouldBranch = false;
 		var branchOffset = 0;
-
-		setRegisterDefault(rs);
-		setRegisterDefault(rt);
 
 		if(registers[rs] != registers[rt]) {
 			shouldBranch = true;
 			branchOffset = offset;
 		}
 
-		return new ExecutionResult(type, 0, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -312,18 +309,17 @@ function loadWord(binaryInstructionString, action) {
 		return "LW R" + rt + ", " + offset + "(R" + rs + ")";
 	}
 	else if(action == ACTIONS.EXECUTE) {
-		var type = "LW";
-
 		setRegisterDefault(rt);
 		setRegisterDefault(rs);
 		setMemoryDefault(rs + offset);
 
+		var stallAmount = 2;
 		var registerState = { register: rt, value: memory[registers[rs] + offset] };
 		var memoryState = null;
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, branchOffset);
 
 	}
 
@@ -342,18 +338,17 @@ function storeWord(binaryInstructionString, action) {
 		return "SW R" + rt + ", " + offset + "(R" + rs + ")";
 	}
 	else if(action == ACTIONS.EXECUTE) {
-		var type = "SW";
-
 		setRegisterDefault(rt);
 		setRegisterDefault(rs);
 		setMemoryDefault(rs + offset);
 
+		var stallAmount = 0;
 		var registerState = null;
 		var memoryState = { memoryLocation: registers[rs] + offset, value: registers[rt] };
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, 0, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -371,11 +366,10 @@ function setOnLessThan(binaryInstructionString, action) {
 		return "SLT R" + rd + ", R" + rs + ", R" + rt;
 	}
 	else if(action == ACTIONS.EXECUTE) {
-		var type = "R";
-
 		setRegisterDefault(rs);
 		setRegisterDefault(rt);
 
+		var stallAmount = 2;
 		var registerState;
 
 		if(registers[rs] < registers[rt]) {
@@ -389,7 +383,7 @@ function setOnLessThan(binaryInstructionString, action) {
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }
@@ -407,17 +401,16 @@ function sub(binaryInstructionString, action) {
 		return "SUB R" + rd + ", R" + rs + ", R" + rt;
 	}
 	else if(action == ACTIONS.EXECUTE) {
-		var type = "R";
-
 		setRegisterDefault(rs);
 		setRegisterDefault(rt);
 
+		var stallAmount = 2;
 		var registerState = { register: rd, value: registers[rs] - registers[rt] };
 		var memoryState = null;
 		var shouldBranch = false;
 		var branchOffset = 0;
 
-		return new ExecutionResult(type, 2, registerState, memoryState, shouldBranch, branchOffset);
+		return new ExecutionResult(stallAmount, registerState, memoryState, shouldBranch, branchOffset);
 	}
 
 }

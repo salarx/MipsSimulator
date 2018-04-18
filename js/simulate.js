@@ -1,6 +1,6 @@
 var instructions = [];
-var registerStates = []; // only updated on write back
-var memoryStates = []; // only updated on write memory
+var registerStates = [];
+var memoryStates = [];
 var cycleData = [];
 
 var currentStep = 0;
@@ -10,11 +10,13 @@ var cycleCounter = 1;
 
 var previousExecutionResult;
 
-
-
-//
-//
-//
+// Initiate the step through. Get simulation data, then show
+// it starting with the initial conditions. Disable previous
+// step button.
+// Params:
+//	None
+// Return:
+//	None
 function stepThrough() {
 
 	decodedCode.push("END");
@@ -33,17 +35,21 @@ function stepThrough() {
 
 }
 
-//
-//
-//
+// Display updated simulation results to the next step.
+// Disable next button if end is reached. Enable prev
+// step button if beginning is left.
+// Params:
+//	None
+// Return:
+//	None
 function nextStep() {
 
-	displayInstructions(currentStep + 1);
-	displayRegisters(currentStep + 1);
-	displayMemory(currentStep + 1);
-	displayCycleData(currentStep + 1);
-
 	currentStep++;
+
+	displayInstructions(currentStep);
+	displayRegisters(currentStep);
+	displayMemory(currentStep);
+	displayCycleData(currentStep);
 
 	if(currentStep == decodedCode.length - 1) {
 		$("#nextStepBtn").attr("disabled", "disabled");
@@ -53,20 +59,23 @@ function nextStep() {
 		$("#prevStepBtn").removeAttr("disabled");
 	}
 
-
 }
 
-//
-//
-//
+// Display updated simulation results to the previous step.
+// Disable previous button if begnning is reached. Enable
+// next button if end is left.
+// Params:
+//	None
+// Return:
+//	None
 function previousStep() {
 
-	displayInstructions(currentStep - 1);
-	displayRegisters(currentStep - 1);
-	displayMemory(currentStep - 1);
-	displayCycleData(currentStep - 1);
-
 	currentStep--;
+
+	displayInstructions(currentStep);
+	displayRegisters(currentStep);
+	displayMemory(currentStep);
+	displayCycleData(currentStep);
 
 	if(currentStep == 0) {
 		$("#prevStepBtn").attr("disabled", "disabled");
@@ -76,12 +85,14 @@ function previousStep() {
 		$("#nextStepBtn").removeAttr("disabled");
 	}
 
-
 }
 
-//
-//
-//
+// Run simulation and display results from end. Disable
+// next step button.
+// Params:
+//	None
+// Return:
+//	None
 function executeAll() {
 
 	decodedCode.push("END");
@@ -95,15 +106,20 @@ function executeAll() {
 	displayMemory(memoryStates.length - 1);
 	displayCycleData(cycleData.length);
 
+	$("#nextStepBtn").attr("disabled", "disabled");
+
 	$('html, body').animate({
 		scrollTop: $("#simulationResultsContainer").offset().top - 20
 	}, 500);
 
 }
 
-//
-//
-//
+// Display all instructions in human readable code. Put arrow
+// next to instruction that current step is about to execute.
+// Params:
+//	Integer of the current step in simulation
+// Return:
+//	None
 function displayInstructions(currentInstruction) {
 
 	$("#simulationInstructions").html("");
@@ -119,9 +135,12 @@ function displayInstructions(currentInstruction) {
 
 }
 
-//
-//
-//
+// Display all non-zero register values from simulation
+// results based on step in register states.
+// Params:
+//	Integer of the current step in simulation
+// Return:
+//	None
 function displayRegisters(currentRegisterState) {
 
 	$("#simulationRegisters").html("");
@@ -131,13 +150,19 @@ function displayRegisters(currentRegisterState) {
 			$("#simulationRegisters").append("<tr><td>R" + key + "</td><td>" + registerStates[currentRegisterState][key] + "</td></tr>");
 		}
 	}
+
 }
 
-//
-//
-//
+// Display all non-zero memory values from simluation
+// results based on step in memory states.
+// Params:
+//	Integer of the current step in simulation
+// Return:
+//	None
 function displayMemory(currentMemoryState) {
+
 	$("#simulationMemory").html("");
+
 	for(var key in memoryStates[currentMemoryState]) {
 		if(memoryStates[currentMemoryState][key]){
 			$("#simulationMemory").append("<tr><td>" + key + "</td><td>" + memoryStates[currentMemoryState][key] + "</td></tr>");
@@ -146,9 +171,13 @@ function displayMemory(currentMemoryState) {
 
 }
 
-//
-//
-//
+// Display cycle data based up to current step in simulation.
+// Each row refers to a different instruction while each column
+// is a different clock cycle.
+// Params:
+//	Integer of the current step in simulation
+// Return:
+//	None
 function displayCycleData(currentCycleData) {
 
 	$("#simulationCycleNumber").html("");
@@ -177,7 +206,6 @@ function displayCycleData(currentCycleData) {
 				$("#simulationCycleData").append("<td></td>");
 			}
 
-
 		}
 
 		$("#simulationCycleData").append("</tr>");
@@ -185,9 +213,15 @@ function displayCycleData(currentCycleData) {
 
 }
 
-//
-//
-//
+// Load inital register and memory values into register states.
+// The pcCounter points to the instruction to be fetched.
+// If the previous execution result is null, then it was a branch
+// and is reason to skip the next x amount of instructions while still
+// fetching the first after.
+// Params:
+//	None
+// Return:
+//	None
 function simulate() {
 
 	registerStates.push(Object.assign({}, registers));
@@ -214,16 +248,19 @@ function simulate() {
 			previousExecutionResult = null;
 		}
 
-
 	}
 
 	cycleCounter += 4;
 
 }
 
-//
-//
-//
+// Pushes new array of instruction information to cycleData.
+// Writes the fetched information to cycleData and increments
+// cycleCounter.
+// Params:
+//	None
+// Return:
+//	binaryInstructionString corresponding to pcCounter
 function instructionFetch() {
 
 	cycleData.push([]);
@@ -234,9 +271,15 @@ function instructionFetch() {
 
 }
 
-//
-//
-//
+// If previous execution result exists then stall based on
+// that previous instruction. If branch, then don't execute
+// current instruction. Write decode and execution to cycleData,
+// and increment cycleCounter after both.
+// Params:
+//	String of 32-bit binary instruction
+// Return:
+//	ExecutionResult from execution instruction or null on
+// 	case of previousExecutionResult being a branch
 function decodeAndExecute(instructionBinary) {
 
 	if(previousExecutionResult) {
@@ -265,9 +308,14 @@ function decodeAndExecute(instructionBinary) {
 
 }
 
-//
-//
-//
+// If execution result contains changes to memory, then
+// add those changes to the memoryStates and current memory.
+// Else push copy of memory to memoryStates. Add memory information
+// to cycleData.
+// Params:
+//	ExecutionResult from execution of instruction
+// Return:
+//	None
 function writeMemory(executionResult) {
 
 	if(executionResult.memoryState) {
@@ -289,9 +337,14 @@ function writeMemory(executionResult) {
 
 }
 
-//
-//
-//
+// If execution result contains changes to registers, then
+// add those changes to the registerStates and current registers.
+// Else push a copy of registers to registerStates. Add register
+// information to cycleData.
+// Params:
+//	ExecutionResult from execution of instruction
+// Return:
+//	None
 function writeBack(executionResult) {
 
 	if(executionResult.registerState) {
@@ -313,6 +366,12 @@ function writeBack(executionResult) {
 
 }
 
+// Add stalls to current instruction based on previous instruction.
+// Write the stalls to cycleData.
+// Params:
+//	Integer of number of stalls from ExecutionResult
+// Return:
+//	None
 function stall(numberOfStalls) {
 
 	for(var i = 0; i < numberOfStalls; i++) {
@@ -322,6 +381,11 @@ function stall(numberOfStalls) {
 
 }
 
-function toggleView() {
+// Create downloadable text file link.
+// Params:
+//	None
+// Return:
+//	None
+function download() {
 
 }
