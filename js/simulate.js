@@ -9,6 +9,8 @@ var pcCounter = 0;
 var cycleCounter = 1;
 
 var previousExecutionResult;
+var secondPreviousResult;
+var didPreviousStall = false;
 
 // Initiate the step through. Get simulation data, then show
 // it starting with the initial conditions. Disable previous
@@ -249,6 +251,9 @@ function simulate() {
 		var executionResult = decodeAndExecute(instruction);
 
 		if(executionResult) {
+
+			secondPreviousResult = previousExecutionResult;
+
 			previousExecutionResult = executionResult;
 
 			writeMemory(executionResult);
@@ -257,7 +262,7 @@ function simulate() {
 
 			pcCounter++;
 
-			cycleCounter = cycleCounter - 4;
+			cycleCounter -= 4;
 		}
 		else {
 			previousExecutionResult = null;
@@ -278,7 +283,10 @@ function simulate() {
 //	String of 32-bit binary instruction corresponding to pcCounter
 function instructionFetch() {
 
-	cycleData.push([]);
+	while(!cycleData[pcCounter]) {
+		cycleData.push([]);
+	}
+
 	cycleData[pcCounter][cycleCounter] = "I" + (pcCounter + 1) + "-IF";
 	cycleCounter++;
 
@@ -297,8 +305,27 @@ function instructionFetch() {
 // 	case of previousExecutionResult being a branch
 function decodeAndExecute(instructionBinary) {
 
+	var shouldStall = false;
+	var stallLocations = findInstruction(instructionBinary, ACTIONS.SHOULD_STALL);
+
 	if(previousExecutionResult) {
-		stall(previousExecutionResult.stallAmount);
+
+		if(previousExecutionResult.stallLocation) {		
+
+			for(var i = 0; i < stallLocations.length; i++) {
+				if(stallLocations[i] == previousExecutionResult.stallLocation) {
+					shouldStall = true;
+				}
+			}
+
+			if(shouldStall) {
+				stall(previousExecutionResult.stallAmount);
+				didPreviousStall = true;
+			}
+			else {
+				didPreviousStall = false;
+			}
+		}
 
 		if(previousExecutionResult.shouldBranch) {
 			pcCounter += previousExecutionResult.branchOffset;
@@ -308,6 +335,26 @@ function decodeAndExecute(instructionBinary) {
 			registerStates.push(Object.assign({}, registerStates[registerStates.length - 1]));
 
 			return;
+		}
+
+	}
+
+	if(secondPreviousResult && !didPreviousStall) {
+
+		if(secondPreviousResult.stallLocation) {
+
+			var shouldStallSecond = false;
+
+			for(var i = 0; i < stallLocations.length; i++) {
+				if(stallLocations[i] == secondPreviousResult.stallLocation) {
+					shouldStallSecond = true;
+				}
+			}
+
+			if(shouldStallSecond) {
+				stall(secondPreviousResult.stallAmount - 1);
+			}
+
 		}
 	}
 
