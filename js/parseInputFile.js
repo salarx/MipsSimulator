@@ -301,12 +301,12 @@ function isValidMemoryLocation(memoryLocation) {
 
   memoryNumber = parseInt(memoryLocation);
 
-  if(memoryNumber) {
-    if(memoryNumber >= 0 && memoryNumber < 65280 && memoryNumber % 4 == 0) {
+  if(memoryNumber || memoryLocation == 0) {
+    if(memoryNumber >= 0 && memoryNumber < 65280) {
       isValid = true;
     }
     else {
-      warnings.push("Memory location <strong>" + memoryLocation + "</strong> must be greater than 0, less than 65280, and divisible by 4.");
+      warnings.push("Memory location <strong>" + memoryLocation + "</strong> must be greater than 0 and less than 65280");
     }
   }
   else {

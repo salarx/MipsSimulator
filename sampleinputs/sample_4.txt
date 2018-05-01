@@ -1,9 +1,5 @@
 // This sample should not stall
 
-// add rd, rs, rt
-// rd = rs + rt
-// 0000 00ss ssst tttt dddd d000 0010 0000
-
 // add r3, r1, r2
 // add r4, r1, r2
 
