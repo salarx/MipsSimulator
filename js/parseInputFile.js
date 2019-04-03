@@ -72,7 +72,7 @@ function canDoDragAndDrop() {
 //  None
 function readDemoFile() {
 
-  const DEMO_FILE_LINK = "https://raw.githubusercontent.com/hunterhedges/mipsSimulator/master/sampleinputs/sample_1.txt";
+  const DEMO_FILE_LINK = "sampleinputs/sample_1.txt";
 
   $.get(DEMO_FILE_LINK, function(data) {
     parseInputFile(data);
