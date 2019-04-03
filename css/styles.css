@@ -20,8 +20,7 @@ a:hover {
 
 /***** Navbar *****/
 .navbar {
-	background: url('https://github.com/hunterhedges/mipsSimulator/blob/master/images/overlay.png?raw=true');
-	background-color: #041942;
+	background: #041942 url("/images/overlay.png");
 	font-family: 'Open Sans', sans-serif;
 	color: #ecf0f1;
 }
@@ -46,8 +45,7 @@ a:hover {
 footer {
 	position: relative;
 	clear: both;
-	background: url('https://github.com/hunterhedges/mipsSimulator/blob/master/images/overlay.png?raw=true');
-	background-color: #041942;
+	background: #041942 url("/images/overlay.png");
 	height: 75px;
 	margin-top: -75px;
 }
