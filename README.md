@@ -1,9 +1,9 @@
-# ![alt text](https://raw.githubusercontent.com/hunterhedges/mipsSimulator/master/images/favicon.ico "MIPS Simulator!") MIPS Simulator 
+# ![alt text](https://raw.githubusercontent.com/salarx/mipsSimulator/master/images/favicon.ico "MIPS Simulator!") MIPS Simulator 
 A simple MIPS pipeline CPU simulator demonstrating the effects of different instructions
 on clock cycles, registers, and memory. Step through to view effects closer or execute all instructions
 to see the final results. 
 
-## Input File Format <a href="https://github.com/hunterhedges/mipsSimulator/tree/master/sampleinputs">(Sample Inputs)</a>
+## Input File Format
 
 ### Setting Initial Values of Registers
 This section is began with the word "registers" (not case sensitive).
@@ -35,7 +35,7 @@ M4 100
 ### Code Section
 This section is began with the word "code" (not case sensitive).
 Each line of this section needs to be a 32 - bit MIPS instruction that is 
-supported by the program. [See Below](#supported-mips-instructions)
+supported by the program.
 
 Each line of code can be separated with a number of spaces. 
 
@@ -46,14 +46,6 @@ CODE
 00000001010101010101100000100010  
 
 ## Supported MIPS Instructions
-- [ADD - add (with overflow)](#add---add-with-overflow)
-- [ADDI - add immediate (with overflow)](#addi---add-immediate-with-overflow)
-- [SUB - subtract](#sub---subtract)
-- [SLT - set on less than (signed)](#slt---set-on-less-than-signed)
-- [LW - load word](#lw---load-word)
-- [SW - store word](#sw---store-word)
-- [BEQ - branch on equal](#beq---branch-on-equal)
-- [BNE - branch on not equal](#beq---branch-on-not-equal)
 
 ### ADD - add (with overflow)
 add rd, rs, rt  
